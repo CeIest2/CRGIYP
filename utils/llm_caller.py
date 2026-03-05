@@ -9,42 +9,57 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-
 load_dotenv()
 langfuse_client = Langfuse()
 logger = logging.getLogger(__name__)
-
 
 def _fetch_prompt_template(prompt_name: str) -> ChatPromptTemplate:
     try:
         langfuse_prompt = langfuse_client.get_prompt(prompt_name)
         prompt_messages = langfuse_prompt.get_langchain_prompt()
         return ChatPromptTemplate.from_messages(prompt_messages)
-    
     except Exception as e:
         logger.error(f"Erreur lors de la récupération du prompt '{prompt_name}': {e}")
         raise
 
 def _initialize_llm(model_name: str, temperature: float, response_format: str = "text") -> ChatGoogleGenerativeAI:
-    kwargs = {}
+    # Correction de l'avertissement : on passe response_mime_type au constructeur
+    response_mime_type = "application/json" if response_format.lower() == "json" else "text/plain"
+    return ChatGoogleGenerativeAI(
+        model=model_name, 
+        temperature=temperature, 
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        response_mime_type=response_mime_type
+    )
+def _build_tracking_config(session_id: str, trace_name: str, tags: list, trace_id: str = None) -> dict:
+    metadata = {
+        "langfuse_session_id": session_id,
+        "langfuse_trace_name": trace_name,
+        "langfuse_tags": tags,
+    }
+    if trace_id:
+        metadata["langfuse_trace_id"] = trace_id # LA CLÉ MAGIQUE
     
-    if response_format.lower() == "json":
-        kwargs["model_kwargs"] = {"response_mime_type": "application/json"}
-        
-    return ChatGoogleGenerativeAI(model=model_name, temperature=temperature, google_api_key=os.getenv("GOOGLE_API_KEY"), **kwargs )
+    return {
+        "callbacks": [CallbackHandler()],
+        "metadata": metadata
+    }
 
-def _build_tracking_config(session_id: str, trace_name: str, tags: List[str]) -> Dict[str, Any]:
-    langfuse_handler = CallbackHandler()
-    
-    return {"callbacks": [langfuse_handler],"metadata": {"langfuse_session_id": session_id,"langfuse_trace_name": trace_name,"langfuse_tags": tags}}
-
-
-
-def call_llm_with_tracking( prompt_name: str, variables: Dict[str, Any], session_id: str, trace_name: str = "llm_call", tags: List[str] = [], model_name: str = "gemini-2.5-flash", temperature: float = 0.0, response_format: str = "text") -> Dict[str, Any]:
+def call_llm_with_tracking(
+    prompt_name: str, 
+    variables: Dict[str, Any], 
+    session_id: str, 
+    trace_name: str = "llm_call", 
+    tags: List[str] = [], 
+    model_name: str = "gemini-2.5-flash", 
+    temperature: float = 0.0, 
+    response_format: str = "text",
+    trace_id: str = None # Paramètre ajouté
+) -> Dict[str, Any]:
     try:
         prompt_template = _fetch_prompt_template(prompt_name)
         llm             = _initialize_llm(model_name, temperature, response_format) 
-        tracking_config = _build_tracking_config(session_id, trace_name, tags)
+        tracking_config = _build_tracking_config(session_id, trace_name, tags, trace_id=trace_id)
         chain           = prompt_template | llm | StrOutputParser()
 
     except Exception as e:
@@ -54,13 +69,10 @@ def call_llm_with_tracking( prompt_name: str, variables: Dict[str, Any], session
     try:
         logger.info(f"Appel LLM pour '{trace_name}'...")
         response_text = chain.invoke(variables, config=tracking_config)
-        return {"success": True,"content": response_text.strip(),"error_message": None}
-    
+        return {"success": True, "content": response_text.strip(), "error_message": None}
     except Exception as e:
         logger.error(f"Échec de l'exécution LLM: {e}")
         return {"success": False, "content": None, "error_message": str(e)}
-    
-
 if __name__ == "__main__":
     import os
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
