@@ -8,13 +8,14 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def evaluate_cypher_result(question: str, cypher: str, explanation: str, db_output: Any, session_id: str = "eval_session_default",trace_id: str = None ) -> Dict[str, Any]:
+def evaluate_cypher_result(question: str, cypher: str, explanation: str, db_output: Any, session_id: str = "eval_session_default", trace_id: str = None, oracle_expectations: Dict[str, Any] = None) -> Dict[str, Any]:
     try:
         schema_doc = load_schema_doc()
     except Exception as e:
         return {"is_valid": False, "error_type": "SYSTEM", "analysis": f"Schema load failed: {e}"}
-
-    variables = {"question": question, "cypher": cypher, "explanation": explanation, "db_output": format_db_output(db_output), "schema_doc": schema_doc}
+    
+    variables = {"question": question,  "cypher": cypher,  "explanation": explanation,  "db_output": format_db_output(db_output),  "schema_doc": schema_doc, "oracle_expectations": json.dumps(oracle_expectations, indent=2, ensure_ascii=False) if oracle_expectations else "Aucune consigne de l'Oracle n'a été fournie."}
+    
     logger.info(f"🔎 Evaluating query for question: '{question[:50]}...'")
     response = call_llm_with_tracking(prompt_name="iyp-query-evaluator", variables=variables, session_id=session_id, trace_id=trace_id, trace_name="cypher_evaluation", tags=["evaluator"], response_format="json")
 
@@ -26,6 +27,16 @@ def evaluate_cypher_result(question: str, cypher: str, explanation: str, db_outp
     except json.JSONDecodeError:
         return {"is_valid": False, "error_type": "SYSTEM", "analysis": "Invalid JSON response."}
     
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     print("\n" + "="*50)

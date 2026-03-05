@@ -1,7 +1,6 @@
-import logging
-import uuid
-import json
+import logging, uuid, json
 from langfuse import Langfuse
+from agents.pre_analyst import get_query_expectations 
 from agents.request_generator import generate_cypher_query
 from agents.evaluator import evaluate_cypher_result
 from DataBase.IYP_connector import test_cypher_on_iyp
@@ -17,8 +16,13 @@ def run_autonomous_loop(question: str, max_retries: int = 5):
     
     with langfuse.start_as_current_observation(name="Autonomous_Cypher_Pipeline", as_type="span", trace_context={"trace_id": run_id, "session_id": session_id}, input={"question": question}) as main_span:
 
-        print(f"\n🚀 STARTING ORCHESTRATOR | Trace ID: {run_id}")
 
+        oracle_res = get_query_expectations(question, session_id=session_id, trace_id=run_id)
+        
+        if oracle_res.get("success"):
+            oracle_expectations = {"real_world_context": oracle_res.get("real_world_context"), "expected_data_type": oracle_res.get("expected_data_type"), "is_empty_result_plausible": oracle_res.get("is_empty_result_plausible"), "rejection_conditions": oracle_res.get("rejection_conditions")}
+
+        print(oracle_expectations)
         for attempt in range(max_retries):
             current_attempt = attempt + 1
             print(f"\n--- 🔄 ATTEMPT {current_attempt}/{max_retries} ---")
@@ -33,7 +37,7 @@ def run_autonomous_loop(question: str, max_retries: int = 5):
             explanation = gen_result["explanation"]
             db_result   = test_cypher_on_iyp(cypher)
 
-            eval_verdict = evaluate_cypher_result(question=question, cypher=cypher, explanation=explanation, db_output=db_result, session_id=session_id, trace_id=run_id)
+            eval_verdict = evaluate_cypher_result(question=question, cypher=cypher, explanation=explanation, db_output=db_result, session_id=session_id, trace_id=run_id,oracle_expectations=oracle_expectations)
 
             if eval_verdict.get("is_valid"):
                 print(f"✅ SUCCESS at attempt {current_attempt}!")
@@ -58,6 +62,6 @@ def run_autonomous_loop(question: str, max_retries: int = 5):
         return {"status": "FAILED", "iterations": max_retries}
 
 if __name__ == "__main__":
-    q = "Quels sont les noms des 5 entreprises au Royaume-Uni qui ont la plus grosse part de marché, mais qui gèrent aussi plus de 2 préfixes IP ?"
+    q = "Quels sont les noms des 5 entreprises au Royaume-Uni qui ont la plus grosse part de marché, mais qui gèrent aussi plus de 1 préfixes IP ?"
     result = run_autonomous_loop(q)
     print("\nFinal Result:", json.dumps(result, indent=2))
