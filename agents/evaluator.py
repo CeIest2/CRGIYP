@@ -1,14 +1,9 @@
-import json
-import logging
-import os
+import json,logging,os
 from typing import Dict, Any
-
-# Internal imports - assuming execution from the project root
 from utils.llm_caller import call_llm_with_tracking
 from utils.helpers import load_schema_doc, format_db_output
 from DataBase.IYP_connector import test_cypher_on_iyp
 
-# Set up logging in English
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -70,13 +65,7 @@ if __name__ == "__main__":
 
     # --- STEP 3: EVALUATION ---
     print(f"\n[3/3] EVALUATING RESULTS...")
-    eval_verdict = evaluate_cypher_result(
-        question=test_question,
-        cypher=generated_cypher,
-        explanation=generated_explanation,
-        db_output=db_result,
-        session_id=session_id
-    )
+    eval_verdict = evaluate_cypher_result(question=test_question, cypher=generated_cypher, explanation=generated_explanation, db_output=db_result, session_id=session_id)
 
     # --- FINAL SUMMARY ---
     print("\n" + "="*50)
