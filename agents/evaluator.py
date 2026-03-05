@@ -38,6 +38,9 @@ def evaluate_cypher_result(question: str, cypher: str, explanation: str, db_outp
 
 
 
+
+
+
 if __name__ == "__main__":
     print("\n" + "="*50)
     print("RUNNING FULL PIPELINE TEST (ENGLISH)")

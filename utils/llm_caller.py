@@ -24,18 +24,11 @@ def _fetch_prompt_template(prompt_name: str) -> ChatPromptTemplate:
 
 def _initialize_llm(model_name: str, temperature: float, response_format: str = "text") -> ChatGoogleGenerativeAI:
     response_mime_type = "application/json" if response_format.lower() == "json" else "text/plain"
-    return ChatGoogleGenerativeAI(
-        model=model_name, 
-        temperature=temperature, 
-        google_api_key=os.getenv("GOOGLE_API_KEY"),
-        response_mime_type=response_mime_type
-    )
+    return ChatGoogleGenerativeAI(model=model_name, temperature=temperature, google_api_key=os.getenv("GOOGLE_API_KEY"),response_mime_type=response_mime_type)
+
+
 def _build_tracking_config(session_id: str, trace_name: str, tags: list, trace_id: str = None) -> dict:
-    metadata = {
-        "langfuse_session_id": session_id,
-        "langfuse_trace_name": trace_name,
-        "langfuse_tags": tags,
-    }
+    metadata = {"langfuse_session_id": session_id, "langfuse_trace_name": trace_name, "langfuse_tags": tags,}
     if trace_id:
         metadata["langfuse_trace_id"] = trace_id 
     
@@ -64,6 +57,18 @@ def call_llm_with_tracking(prompt_name: str, variables: Dict[str, Any], session_
         logger.error(f"Échec de l'exécution LLM: {e}")
         return {"success": False, "content": None, "error_message": str(e)}
     
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == "__main__":

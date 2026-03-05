@@ -14,19 +14,24 @@ def get_query_expectations(user_question: str, session_id: str = "pre_analyst_de
     if response["success"]:
         try:
             content = json.loads(response["content"])
-            # C'EST ICI QUE TOUT CHANGE : ON RÉCUPÈRE LES NOUVELLES CLÉS
-            return {
-                "success": True, 
-                "real_world_context": content.get("real_world_context"), 
-                "expected_data_type": content.get("expected_data_type"), 
-                "is_empty_result_plausible": content.get("is_empty_result_plausible"),
-                "rejection_conditions": content.get("rejection_conditions")
-            }
+            return {"success": True, "real_world_context": content.get("real_world_context"), "expected_data_type": content.get("expected_data_type"), "is_empty_result_plausible": content.get("is_empty_result_plausible"),"rejection_conditions": content.get("rejection_conditions")}
         except json.JSONDecodeError:
             logger.error("LLM output could not be parsed as JSON.")
             return {"success": False, "error_message": "LLM output format error: expected valid JSON."}
     
     return response
+
+
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

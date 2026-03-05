@@ -21,6 +21,14 @@ def generate_cypher_query(user_question: str, session_id: str = "gen_session_def
     
     return response
 
+
+
+
+
+
+
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     
