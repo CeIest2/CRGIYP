@@ -4,6 +4,7 @@ import logging
 import re
 from typing import Any
 
+from CRGIYP.agents.json_corrector import fix_malformed_json
 logger = logging.getLogger(__name__)
 
 def get_project_root() -> str:
@@ -44,12 +45,11 @@ def save_json_debug(data: dict, filename: str):
 
 
 
-def parse_llm_json(response_text: str) -> dict:
+def parse_llm_json(response_text: str, session_id: str = "default_session", trace_id: str = None) -> dict:
     cleaned_text = response_text.strip()
     cleaned_text = re.sub(r'^```json\s*', '', cleaned_text, flags=re.MULTILINE)
     cleaned_text = re.sub(r'```$', '', cleaned_text, flags=re.MULTILINE)
     
-
     try:
         start_idx = cleaned_text.find('{')
         end_idx = cleaned_text.rfind('}')
@@ -58,7 +58,6 @@ def parse_llm_json(response_text: str) -> dict:
             raise ValueError("Aucune accolade trouvée dans la réponse.")
             
         json_str = cleaned_text[start_idx:end_idx + 1]
-        
         json_str = re.sub(r'[\x00-\x1F\x7F]', '', json_str)
         
         return json.loads(json_str)
@@ -67,6 +66,17 @@ def parse_llm_json(response_text: str) -> dict:
         try:
             repaired_json = json_str.replace('\n', '\\n').replace('\r', '\\r')
             return json.loads(repaired_json)
-        except:
-            print(f"❌ Erreur critique de parsing JSON.\nPosition de l'erreur: {e.pos}\nTexte extrait:\n{json_str}")
-            raise ValueError(f"JSON invalide malgré tentatives de réparation : {e}")
+        except Exception:
+            logger.warning(f"⚠️ Échec du parsing basique. Appel de l'agent correcteur LLM...")
+            
+            correction_result = fix_malformed_json(json_str, session_id=session_id, trace_id=trace_id)
+            
+            if correction_result["success"]:
+                try:
+                    return json.loads(correction_result["fixed_json_string"])
+                except json.JSONDecodeError as final_error:
+                    logger.error(f"❌ L'agent a échoué à produire un JSON valide. Sortie: {correction_result['fixed_json_string']}")
+                    raise ValueError(f"JSON toujours invalide après correction par le LLM : {final_error}")
+            else:
+                logger.error(f"❌ Erreur critique lors de l'appel à l'agent correcteur: {correction_result.get('error_message')}")
+                raise ValueError(f"JSON invalide et échec de l'agent correcteur : {e}")
