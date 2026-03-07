@@ -32,8 +32,19 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
         cypher       = gen_result["cypher"]
         explanation  = gen_result["explanation"]
         db_result    = test_cypher_on_iyp_traced(cypher)
+
+        sample_limit = 20 
+        is_truncated = len(db_result.get('data', [])) > sample_limit
         
-        eval_verdict = evaluate_cypher_result(question=target_question, cypher=cypher, explanation=explanation, db_output=db_result, session_id=session_id, trace_id=run_id, oracle_expectations=oracle_expectations, trace_name=f"{attempt_prefix} Evaluation")
+        db_output_for_llm = {
+            "success": db_result["success"],
+            "data": db_result.get('data', [])[:sample_limit] if db_result["success"] else [],
+            "row_count": len(db_result.get('data', [])),
+            "is_truncated": is_truncated,
+            "error_message": db_result.get("error_message")
+        }
+        
+        eval_verdict = evaluate_cypher_result(question=target_question, cypher=cypher, explanation=explanation, db_output=db_output_for_llm, session_id=session_id, trace_id=run_id, oracle_expectations=oracle_expectations, trace_name=f"{attempt_prefix} Evaluation")
 
         if eval_verdict.get("is_valid"):
             print(f"✅ SUCCESS at attempt {current_attempt}!")
@@ -67,9 +78,9 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
 
 
 
-def run_autonomous_loop(question: str, max_retries: int = 9):
+def run_autonomous_loop(question: str, max_retries: int = 9,session_id: str = None):
     run_id = uuid.uuid4().hex
-    session_id = f"session_{uuid.uuid4().hex[:8]}"
+    if not session_id:  session_id = f"session_{uuid.uuid4().hex[:8]}"
     
     with langfuse.start_as_current_observation(name="Autonomous_Cypher_Pipeline", as_type="span", trace_context={"trace_id": run_id, "session_id": session_id}, input={"question": question}) as main_span:
 
@@ -94,7 +105,7 @@ def run_autonomous_loop(question: str, max_retries: int = 9):
                 intent = sq.get("intent")
                 print(f"\n>>> 🏃 Exécution de l'Étape {step_num}: {intent}")
                 
-                step_result = resolve_query_with_retries(target_question=intent, context_data=context_data, oracle_expectations=oracle_expectations, session_id=session_id, run_id=run_id, max_retries=4)
+                step_result = resolve_query_with_retries(target_question=intent, context_data=context_data, oracle_expectations=oracle_expectations, session_id=session_id, run_id=run_id, max_retries=8)
 
                 if step_result["status"] == "SUCCESS":
                     context_data[f"Resultat_Etape_{step_num}"] = step_result["data"]

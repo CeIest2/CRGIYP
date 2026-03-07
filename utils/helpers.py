@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -43,14 +44,29 @@ def save_json_debug(data: dict, filename: str):
 
 
 
-def parse_llm_json(raw_content: str) -> dict:
-    if not raw_content:
-        raise ValueError("LLM response content is empty.")
-        
-    cleaned_content = raw_content.strip()
+def parse_llm_json(response_text: str) -> dict:
+    cleaned_text = response_text.strip()
+    cleaned_text = re.sub(r'^```json\s*', '', cleaned_text, flags=re.MULTILINE)
+    cleaned_text = re.sub(r'```$', '', cleaned_text, flags=re.MULTILINE)
     
-    if cleaned_content.startswith("```json"): cleaned_content = cleaned_content[7:]
-    elif cleaned_content.startswith("```"):   cleaned_content = cleaned_content[3:]
-    if cleaned_content.endswith("```"):       cleaned_content = cleaned_content[:-3]
-    cleaned_content = cleaned_content.strip()
-    return json.loads(cleaned_content)
+
+    try:
+        start_idx = cleaned_text.find('{')
+        end_idx = cleaned_text.rfind('}')
+        
+        if start_idx == -1 or end_idx == -1:
+            raise ValueError("Aucune accolade trouvée dans la réponse.")
+            
+        json_str = cleaned_text[start_idx:end_idx + 1]
+        
+        json_str = re.sub(r'[\x00-\x1F\x7F]', '', json_str)
+        
+        return json.loads(json_str)
+        
+    except json.JSONDecodeError as e:
+        try:
+            repaired_json = json_str.replace('\n', '\\n').replace('\r', '\\r')
+            return json.loads(repaired_json)
+        except:
+            print(f"❌ Erreur critique de parsing JSON.\nPosition de l'erreur: {e.pos}\nTexte extrait:\n{json_str}")
+            raise ValueError(f"JSON invalide malgré tentatives de réparation : {e}")

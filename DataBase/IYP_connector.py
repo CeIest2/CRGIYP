@@ -23,7 +23,7 @@ def test_cypher_on_iyp(query: str, parameters: dict = None) -> dict:
     try:
         with GraphDatabase.driver(IYP_URI, auth=auth) as driver:
             driver.verify_connectivity()
-            records, summary, keys = driver.execute_query(query,  parameters_=parameters, routing_="r" )
+            records, summary, keys = driver.execute_query(query,  parameters_=parameters, routing_="r" ,timeout=200.0)
             
             return {"success": True, "keys": keys, "data": [record.data() for record in records], "metadata": { "query_type": summary.query_type, "time_ms": summary.result_available_after}}
             

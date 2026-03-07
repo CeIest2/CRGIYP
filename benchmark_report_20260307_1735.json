@@ -1,0 +1,985 @@
+{
+    "session_id": "benchmark_cyphereval_20260307_1735_ff8d",
+    "last_updated": "2026-03-07T19:47:29.228778",
+    "stats_current_run": {
+        "global": {
+            "total": 93,
+            "success": 63,
+            "failed": 30
+        },
+        "by_difficulty": {
+            "Easy technical prompt": {
+                "total": 23,
+                "success": 17,
+                "failed": 6
+            },
+            "Easy general prompt": {
+                "total": 23,
+                "success": 15,
+                "failed": 8
+            },
+            "Medium technical prompt": {
+                "total": 17,
+                "success": 12,
+                "failed": 5
+            },
+            "Medium general prompt": {
+                "total": 17,
+                "success": 10,
+                "failed": 7
+            },
+            "Hard technical prompt": {
+                "total": 5,
+                "success": 3,
+                "failed": 2
+            },
+            "Hard general prompt": {
+                "total": 6,
+                "success": 4,
+                "failed": 2
+            },
+            "Hard technical prompt,Find the QUERIED_FROM's value for the DomainName with name 'google.com' and the Country with country_code 'US'.\"": {
+                "total": 1,
+                "success": 1,
+                "failed": 0
+            },
+            "Medium technical prompt,Find all the Facility nodes located in Country with country_code 'CN' or 'HK' and count the number of ASes located in these facilities. Return the facility name and the number of ASes.\"": {
+                "total": 1,
+                "success": 1,
+                "failed": 0
+            }
+        }
+    },
+    "details": [
+        {
+            "task_id": "1.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the IXPs' names where the AS with asn 2497 is present.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 7.6,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:MEMBER_OF]->(ix:IXP) WITH a, COLLECT(ix.name) AS ix_names RETURN a.asn, ix_names LIMIT 1",
+            "canonical_cypher": "MATCH (:AS {asn: 2497})-[:MEMBER_OF]->(ixp:IXP) RETURN DISTINCT ixp.name"
+        },
+        {
+            "task_id": "1.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Give me the names of the IXPs where AS2497 is member.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.73,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:MEMBER_OF]->(ix:IXP) RETURN COLLECT(ix.name)[0] AS IXP_Names LIMIT 1",
+            "canonical_cypher": "MATCH (:AS {asn: 2497})-[:MEMBER_OF]->(ixp:IXP) RETURN DISTINCT ixp.name"
+        },
+        {
+            "task_id": "2.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the percentage of the population of the Country with country_code 'JP' hosted by the AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.17,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[r:POPULATION]->(c:Country {country_code: 'JP'}) RETURN r.percent AS population_percentage",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[p:POPULATION]-(:Country {country_code:'JP'}) RETURN p.percent"
+        },
+        {
+            "task_id": "2.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Find the percentage of Japan's population in AS2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.89,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[r:POPULATION]->(c:Country {country_code: 'JP'}) RETURN a.asn AS ASN, r.percent AS PopulationPercentage",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[p:POPULATION]-(:Country {country_code:'JP'}) RETURN p.percent"
+        },
+        {
+            "task_id": "3.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "For AS with asn 2497 find all rank values and their corresponding Ranking name for Rankings corresponding to Country with country_code 'JP'.",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 154.23,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:AS  {asn:2497})-[r1:RANK]-(r2:Ranking)--(:Country {country_code:'JP'}) RETURN r1.rank, r2.name"
+        },
+        {
+            "task_id": "3.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Find the rank and the corresponding rankings name for AS2497 in Japan.",
+            "status": "SUCCESS",
+            "iterations_used": 4,
+            "time_seconds": 39.73,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[r:RANK]->(rn:Ranking) WHERE r.country = 'JP' RETURN r.rank AS Rank, rn.name AS RankingName LIMIT 10",
+            "canonical_cypher": "MATCH (:AS  {asn:2497})-[r1:RANK]-(r2:Ranking)--(:Country {country_code:'JP'}) RETURN r1.rank, r2.name"
+        },
+        {
+            "task_id": "4.1",
+            "difficulty": "Hard technical prompt",
+            "prompt": "Find all the AS nodes that have peer to peer relationship with the AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.49,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[r:PEERS_WITH]-(b:AS)\nWHERE r.rel = 0\nWITH a, b\nMATCH (b)-[:NAME]->(n:Name)\nRETURN b.asn AS ASN, COLLECT(n.name)[0] AS AS_Name\nLIMIT 100",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:PEERS_WITH {rel: 0}]-(a:AS) RETURN a"
+        },
+        {
+            "task_id": "4.2",
+            "difficulty": "Hard general prompt",
+            "prompt": "Which Ases have a settlement-free peering with AS2497?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.5,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[r:PEERS_WITH]-(b:AS)\nWHERE r.rel = 0\nWITH b\nMATCH (b)-[:NAME]->(n:Name)\nRETURN b.asn, COLLECT(n.name)[0] AS AS_Name\nLIMIT 100",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:PEERS_WITH {rel: 0}]-(a:AS) RETURN a"
+        },
+        {
+            "task_id": "5.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find all distinct names for the AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 7.73,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:NAME]->(n:Name) RETURN DISTINCT n.name AS AS_Name LIMIT 10",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:NAME]-(n:Name) RETURN DISTINCT n.name"
+        },
+        {
+            "task_id": "5.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What are the names of AS2497?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.96,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:NAME]->(n:Name) RETURN a.asn, COLLECT(n.name) AS AS_Names LIMIT 1",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:NAME]-(n:Name) RETURN DISTINCT n.name"
+        },
+        {
+            "task_id": "6.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the label of all the tags' corresponding to the AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 10.86,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:CATEGORIZED]->(t:Tag) RETURN t.label",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "6.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What are the tags for AS2497?",
+            "status": "SUCCESS",
+            "iterations_used": 2,
+            "time_seconds": 17.59,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:CATEGORIZED]->(t:Tag) RETURN a.asn AS ASN, COLLECT(t.label) AS Tags",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "7.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the label of all the tags for the Prefix with prefix 43.249.213.0/24.",
+            "status": "SUCCESS",
+            "iterations_used": 3,
+            "time_seconds": 55.82,
+            "generated_cypher": "MATCH (p:Prefix {prefix: '43.249.213.0/24'})-[:CATEGORIZED]->(t:Tag) RETURN t.label",
+            "canonical_cypher": "MATCH (:Prefix {prefix: '43.249.213.0/24'})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "7.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What are the tags for 43.249.213.0/24?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 14.12,
+            "generated_cypher": "MATCH (p:Prefix {prefix: '43.249.213.0/24'})-[:CATEGORIZED]->(t:Tag) RETURN p.prefix, COLLECT(t.label) AS tags",
+            "canonical_cypher": "MATCH (:Prefix {prefix: '43.249.213.0/24'})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "8.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the rank value for AS with asn 2497 in the Ranking with name 'CAIDA ASRank'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 7.85,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[r:RANK]->(rn:Ranking {name: 'CAIDA ASRank'}) RETURN r.rank AS rank_value, a.asn AS ASN, rn.name AS Ranking_Name LIMIT 1",
+            "canonical_cypher": "MATCH (:AS  {asn:2497})-[r:RANK]-(:Ranking {name:'CAIDA ASRank'}) RETURN r.rank"
+        },
+        {
+            "task_id": "8.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "What is the rank for AS2497 in CAIDA ASRank?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 217.89,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:AS  {asn:2497})-[r:RANK]-(:Ranking {name:'CAIDA ASRank'}) RETURN r.rank"
+        },
+        {
+            "task_id": "9.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the rank value for DomainName with name 'google.com' in the Ranking with name 'Cisco Umbrella Top 1 million'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.91,
+            "generated_cypher": "MATCH (dn:DomainName {name: 'google.com'})-[r:RANK]-(rn:Ranking {name: 'Cisco Umbrella Top 1 million'}) RETURN r.rank",
+            "canonical_cypher": "MATCH (:DomainName {name: 'google.com'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+        },
+        {
+            "task_id": "9.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "What is the rank for google.com in Cisco Umbrella Top 1 million?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.12,
+            "generated_cypher": "MATCH (dn:DomainName {name: 'google.com'})-[r:RANK]->(rn:Ranking {name: 'Cisco Umbrella Top 1 million'}) RETURN dn.name AS DomainName, r.rank AS Rank",
+            "canonical_cypher": "MATCH (:DomainName {name: 'google.com'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+        },
+        {
+            "task_id": "10.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the rank value for HostName with name 'www.google.com' in the Ranking with name 'Cisco Umbrella Top 1 million'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.48,
+            "generated_cypher": "MATCH (hn:HostName {name: 'www.google.com'})-[r:RANK]->(rn:Ranking {name: 'Cisco Umbrella Top 1 million'}) RETURN r.rank AS rank_value",
+            "canonical_cypher": "MATCH (:HostName {name: 'www.google.com'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+        },
+        {
+            "task_id": "10.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "What is the rank for www.google.com in Cisco Umbrella Top 1 million?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 227.52,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:HostName {name: 'www.google.com'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+        },
+        {
+            "task_id": "11.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find distinct labels for the tags corresponding to the URL with url 'https://www.flipkart.com/'.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 196.54,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:URL {url: 'https://www.flipkart.com/'})-[:CATEGORIZED]->(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "11.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What are the tags for https://www.flipkart.com/?",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 47.37,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:URL {url: 'https://www.flipkart.com/'})-[:CATEGORIZED]->(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "12.1",
+            "difficulty": "Hard technical prompt,Find the QUERIED_FROM's value for the DomainName with name 'google.com' and the Country with country_code 'US'.\"",
+            "prompt": "MATCH (:DomainName {name: 'google.com'})-[q:QUERIED_FROM]->(:Country {country_code: 'US'}) RETURN q.value",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.74,
+            "generated_cypher": "MATCH (dn:DomainName {name: 'google.com'})-[q:QUERIED_FROM]->(c:Country {country_code: 'US'}) RETURN q.value",
+            "canonical_cypher": null
+        },
+        {
+            "task_id": "12.2",
+            "difficulty": "Hard general prompt",
+            "prompt": "What is the proportion of queries for google.com from the US?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.46,
+            "generated_cypher": "MATCH (dn:DomainName {name: 'google.com'})-[q:QUERIED_FROM]->(c:Country {country_code: 'US'}) RETURN q.value AS query_proportion_US",
+            "canonical_cypher": "MATCH (:DomainName {name: 'google.com'})-[q:QUERIED_FROM]->(:Country {country_code: 'US'}) RETURN q.value"
+        },
+        {
+            "task_id": "13.1",
+            "difficulty": "Hard technical prompt",
+            "prompt": "Find the QUERIED_FROM's value for the DomainName with name 'google.com' from the AS with asn 577.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 26.84,
+            "generated_cypher": "MATCH (a:AS {asn: 577})-[:COUNTRY]->(c:Country)\nMATCH (dn:DomainName {name: 'google.com'})-[q:QUERIED_FROM]->(c)\nRETURN q.value",
+            "canonical_cypher": "MATCH (:DomainName {name: 'google.com'})-[q:QUERIED_FROM]->(a:AS {asn: 577}) RETURN q.value"
+        },
+        {
+            "task_id": "13.2",
+            "difficulty": "Hard general prompt",
+            "prompt": "What is the proportion of queries for google.com from AS577?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 19.39,
+            "generated_cypher": "MATCH (a:AS {asn: 577})-[:COUNTRY {reference_org:'NRO'}]-(c:Country)\nMATCH (dn:DomainName {name: 'google.com'})-[q:QUERIED_FROM]-(c)\nRETURN q.value AS query_proportion",
+            "canonical_cypher": "MATCH (:DomainName {name: 'google.com'})-[q:QUERIED_FROM]->(a:AS {asn: 577}) RETURN q.value"
+        },
+        {
+            "task_id": "14.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the distinct asn for ASes corresponding to the Name with name 'IIJ'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.27,
+            "generated_cypher": "MATCH (n:Name {name: 'IIJ'})-[:NAME]-(a:AS) RETURN DISTINCT a.asn",
+            "canonical_cypher": "MATCH (a:AS)-[:NAME]-(:Name {name: 'IIJ'}) RETURN DISTINCT a.asn"
+        },
+        {
+            "task_id": "14.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What is IIJ's ASN?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 11.31,
+            "generated_cypher": "MATCH (n:Name {name: 'IIJ'})-[:NAME]-(a:AS) RETURN a.asn",
+            "canonical_cypher": "MATCH (a:AS)-[:NAME]-(:Name {name: 'IIJ'}) RETURN DISTINCT a.asn"
+        },
+        {
+            "task_id": "15.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the distinct name of AuthoritativeNameServer that manage the DomainName with name 'jp'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.56,
+            "generated_cypher": "MATCH (dn:DomainName {name: 'jp'})-[:MANAGED_BY]->(ans:AuthoritativeNameServer) RETURN DISTINCT ans.name AS AuthoritativeNameServerName LIMIT 100",
+            "canonical_cypher": "MATCH (:DomainName {name: 'jp'})-[:MANAGED_BY]->(a:AuthoritativeNameServer) RETURN DISTINCT a.name"
+        },
+        {
+            "task_id": "15.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "What are the authoritative nameservers for the .jp domain?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 103.64,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:DomainName {name: 'jp'})-[:MANAGED_BY]->(a:AuthoritativeNameServer) RETURN DISTINCT a.name"
+        },
+        {
+            "task_id": "16.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the name of the AuthoritativeNameServer that resolves to the IP with ip 203.119.1.1.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.63,
+            "generated_cypher": "MATCH (ans:AuthoritativeNameServer)-[:RESOLVES_TO]-(ip:IP) WHERE ip.ip = '203.119.1.1' RETURN ans.name LIMIT 1",
+            "canonical_cypher": "MATCH (a:AuthoritativeNameServer)-[:RESOLVES_TO]->(:IP {ip: '203.119.1.1'}) RETURN DISTINCT a.name"
+        },
+        {
+            "task_id": "16.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Which authoritative name server has the IP address 203.119.1.1?",
+            "status": "SUCCESS",
+            "iterations_used": 2,
+            "time_seconds": 18.22,
+            "generated_cypher": "MATCH (ip:IP {ip: '203.119.1.1'})-[:RESOLVES_TO]->(ans:AuthoritativeNameServer) WHERE ans.name IS NOT NULL RETURN ans.name AS authoritative_name_server",
+            "canonical_cypher": "MATCH (a:AuthoritativeNameServer)-[:RESOLVES_TO]->(:IP {ip: '203.119.1.1'}) RETURN DISTINCT a.name"
+        },
+        {
+            "task_id": "17.1",
+            "difficulty": "Hard technical prompt",
+            "prompt": "AS with asn 2907 depends on AS with asn 2497, find the hege values between them.",
+            "status": "SUCCESS",
+            "iterations_used": 2,
+            "time_seconds": 18.75,
+            "generated_cypher": "MATCH (a1:AS {asn: 2907})-[d:DEPENDS_ON {reference_org: 'IHR'}]-(a2:AS {asn: 2497}) WITH a1, a2, COLLECT(d.hege) AS hege_values RETURN a1.asn AS asn1, a2.asn AS asn2, hege_values",
+            "canonical_cypher": "MATCH (:AS {asn: 2907})-[d:DEPENDS_ON]-(:AS {asn: 2497}) RETURN d.hege"
+        },
+        {
+            "task_id": "17.2",
+            "difficulty": "Hard general prompt",
+            "prompt": "What is the AS hegemony value between AS2907 and AS2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.23,
+            "generated_cypher": "MATCH (a:AS {asn: 2907})-[d:DEPENDS_ON]->(b:AS {asn: 2497}) RETURN d.hege AS hegemony_value LIMIT 1",
+            "canonical_cypher": "MATCH (:AS {asn: 2907})-[d:DEPENDS_ON]-(:AS {asn: 2497}) RETURN d.hege"
+        },
+        {
+            "task_id": "18.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the asn of the AS which has rank 1 for Japan (Country with country_code 'JP') according to the Ranking with name 'IHR country ranking: Total AS (JP)'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 12.17,
+            "generated_cypher": "MATCH (a:AS)-[r:RANK]->(rn:Ranking) WHERE rn.name = 'IHR country ranking: Total AS (JP)' AND r.rank = 1 RETURN a.asn",
+            "canonical_cypher": "MATCH (a:AS)-[r:RANK]->(:Ranking {name: 'IHR country ranking: Total AS (JP)'})-[:COUNTRY]->(:Country {country_code: 'JP'}) RETURN a.asn ORDER BY r.hege DESC LIMIT 1"
+        },
+        {
+            "task_id": "18.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Which AS ranks the highest for Japan in terms of ASes?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.21,
+            "generated_cypher": "MATCH (a:AS)-[:COUNTRY {reference_org: 'RIPE NCC'}]-(:Country {country_code: 'JP'}) MATCH (a)-[r:RANK {reference_name: 'ihr.country_dependency'}]->(:Ranking) RETURN a.asn, r.rank ORDER BY r.rank ASC LIMIT 1",
+            "canonical_cypher": "MATCH (a:AS)-[r:RANK]->(:Ranking {name: 'IHR country ranking: Total AS (JP)'})-[:COUNTRY]->(:Country {country_code: 'JP'}) RETURN a.asn ORDER BY r.hege DESC LIMIT 1"
+        },
+        {
+            "task_id": "19.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the prefix of Prefix nodes that originate from AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 7.6,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:ORIGINATE]-(p:Prefix) RETURN p.prefix",
+            "canonical_cypher": "MATCH (p:Prefix)<-[:ORIGINATE]-(:AS {asn: 2497}) RETURN p.prefix"
+        },
+        {
+            "task_id": "19.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Which prefixes AS2497 is orginating in BGP?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 7.96,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:ORIGINATE]-(p:Prefix) RETURN a.asn AS ASN, COLLECT(p.prefix) AS Prefixes",
+            "canonical_cypher": "MATCH (p:Prefix)<-[:ORIGINATE]-(:AS {asn: 2497}) RETURN p.prefix"
+        },
+        {
+            "task_id": "20.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the distinct prefix of Prefix nodes that depends on the AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 92.05,
+            "generated_cypher": "WITH [55898, 18148, 18266, 23778, 55390, 209306, 2506, 7524, 131969, 215786, 152858, 9355, 55911, 24287, 23816, 23620, 18368, 131160, 206216, 63799, 9357, 59111, 197767, 131976, 9824, 4785, 38628, 4721, 17939, 213604, 10012, 4718, 63773, 9367, 7521, 7684, 55909, 23783, 38651, 131971, 58785, 17511, 17516, 146979, 38635, 9617, 4694, 55392, 17953, 18081, 9371, 10003, 7676, 984, 208223, 23786, 9991, 215750, 4713, 131957, 131159, 7516, 2501, 4680, 24279, 131895, 150357, 18144, 131988, 23720, 9595, 131912, 23627, 18074, 18123, 131937, 138384, 131900, 149440, 3258, 10014, 131079, 139468, 9597, 63785, 61215, 63210, 59123, 10000, 131984, 23959, 12654, 58793, 9993, 2907, 131925, 7668, 7671, 214963, 55912, 131921, 9997, 146984, 9605, 153725, 7690, 7665, 17958, 24249, 18135, 151388, 2515, 23628, 153371, 55391, 24284, 37908, 63770, 55379, 131916, 37918, 55910, 4777, 18087, 7527, 55904, 38644, 18267, 53343, 63798, 55900, 23776, 23820, 18121, 4697, 24259, 17693, 135377, 17955, 38636, 59349, 24229, 59103, 131911, 54994, 18260, 150368, 17506, 7672, 24255, 17944, 17707, 213471, 18526, 18274, 18124, 17689, 2523, 7670, 146974, 63782, 146981, 131158, 131958, 17931, 20940, 131964, 7503, 63293, 131918, 55899, 151187, 9999, 59258, 949, 7664, 7483, 151350, 131951, 151338, 23780, 24319, 18126, 131924, 9370, 139317, 24572, 61228, 23639, 398704, 45679, 55380, 63997, 17523, 55373, 400342, 17687, 46138, 152865, 63784, 45689, 63771, 23773, 37914, 17936, 37917, 17698, 57382, 61005, 63800, 23828, 23635, 24270, 198147, 131156, 23785, 152873, 24264, 146987, 23615, 131928, 23793, 10016, 20347, 7663, 59124, 18264, 198304, 36599, 63402, 23637, 58647, 13621, 150367, 24250, 141768, 49959, 131909, 10015, 131898, 131981, 7530, 18140, 23642, 63802, 59118, 17413, 9607, 45688, 131899, 38136, 23634, 58788, 63801, 9374, 17529, 61007, 55385, 2519, 63791, 46829, 63790, 38658, 18128, 23967, 38633, 24336, 17514, 2513, 17941, 17960, 23790, 32059, 23623, 23791, 55897, 17961, 18279, 59107, 58652, 4695, 17701, 202736, 24251, 3258, 2907, 4711, 17940, 137535, 2504, 7511, 24290, 4730, 2505, 131618, 23836, 23822, 10001, 7505, 9354, 17678, 18091, 23817, 26857, 17957, 29457, 37915, 18383, 11870, 18272, 59096, 17937, 37916, 400464, 51847, 13150, 18071, 151375, 150358, 137445, 401615, 2527, 26063, 45675, 17691, 59125, 18090, 131161, 139255, 37891, 131961, 17819, 59098, 131904, 60679, 38074, 63780, 203577, 18088, 216183, 131939, 146980, 4723, 9600, 9358, 398173, 17932, 11289, 17947, 24268, 23618, 10010, 131953, 45690, 38634, 59102, 59092, 59091, 17088, 152861, 59109, 4774, 18276, 23795, 146976, 24257, 23633, 151390, 23826, 18125, 131907, 24283, 131897, 150363, 18283, 24248, 37891, 16625, 61112, 10006, 23781, 9591, 7690, 18094, 7670, 63775, 9622, 10004, 24572, 23627, 23777, 7522, 24261, 7529, 24260, 18150, 17707, 15830, 2522, 7687, 4678, 23807, 37905, 18097, 4729, 17512, 9353, 10011, 9365, 7679, 40605, 55381, 22332, 45685, 7502, 131946, 7509, 24276, 18127, 7500, 18766, 63805, 45691, 393226, 3488, 17946, 9351, 210742, 23775, 18077, 20940, 18911, 2508, 23774, 9378, 63789, 9601, 37912, 49867, 3130, 131896, 38641, 37910, 151379, 63795, 7686, 58784, 131919, 131952, 9614, 9990, 146969, 59099, 24296, 17931, 17953, 2497] AS asns\nMATCH (a:AS)\nWHERE a.asn IN asns\nMATCH (a)-[:ORIGINATE]-(p:Prefix)\nRETURN DISTINCT p.prefix AS prefix",
+            "canonical_cypher": "MATCH (p:Prefix)-[:DEPENDS_ON]->(:AS {asn: 2497}) RETURN DISTINCT p.prefix"
+        },
+        {
+            "task_id": "20.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Which prefixes are depending on AS2497?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 60.46,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:ORIGINATE]->(p:Prefix) RETURN a.asn AS ASN, collect(p.prefix) AS OriginatedPrefixes",
+            "canonical_cypher": "MATCH (p:Prefix)-[:DEPENDS_ON]->(:AS {asn: 2497}) RETURN DISTINCT p.prefix"
+        },
+        {
+            "task_id": "21.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the distinct prefix of Prefix nodes that are categorized with Tag with label 'RPKI Valid'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 101.65,
+            "generated_cypher": "MATCH (p:Prefix)-[:CATEGORIZED]->(t:Tag) WHERE t.label = 'RPKI Valid' RETURN DISTINCT p.prefix AS prefix",
+            "canonical_cypher": "MATCH (p:Prefix)-[:CATEGORIZED]->(:Tag {label: 'RPKI Valid'}) RETURN DISTINCT p.prefix"
+        },
+        {
+            "task_id": "21.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Find all RPKI valid prefixes?",
+            "status": "SUCCESS",
+            "iterations_used": 4,
+            "time_seconds": 45.12,
+            "generated_cypher": "MATCH (p:BGPPrefix)-[:CATEGORIZED]->(t:Tag) WHERE t.label = 'RPKI Valid' RETURN p.prefix, p.af, t.label LIMIT 100",
+            "canonical_cypher": "MATCH (p:Prefix)-[:CATEGORIZED]->(:Tag {label: 'RPKI Valid'}) RETURN DISTINCT p.prefix"
+        },
+        {
+            "task_id": "22.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the distinct prefix of Prefix related to Country with country_code 'JP'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 13.46,
+            "generated_cypher": "MATCH (c:Country {country_code: 'JP'})<-[:COUNTRY {reference_org:'NRO'}]-(a:AS)-[:ORIGINATE]-(p:Prefix) RETURN DISTINCT p.prefix",
+            "canonical_cypher": "MATCH (p:Prefix)-[:COUNTRY]->(:Country {country_code: 'JP'}) RETURN DISTINCT p.prefix"
+        },
+        {
+            "task_id": "22.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Give me all prefixes in Japan.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 1770.18,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (p:Prefix)-[:COUNTRY]->(:Country {country_code: 'JP'}) RETURN DISTINCT p.prefix"
+        },
+        {
+            "task_id": "23.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find all AS sibling of the AS with asn 2497. Return only the asn.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 13.48,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:COUNTRY {reference_org:'NRO'}]-(c:Country)\nMATCH (sibling:AS)-[:COUNTRY {reference_org:'NRO'}]-(c)\nWHERE sibling.asn <> 2497\nRETURN sibling.asn AS sibling_asn\nLIMIT 100",
+            "canonical_cypher": "MATCH (:AS {asn: 2497})-[:SIBLING_OF]->(a:AS) RETURN a.asn"
+        },
+        {
+            "task_id": "23.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Find AS2497's sibling ASNs.",
+            "status": "SUCCESS",
+            "iterations_used": 4,
+            "time_seconds": 49.03,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[r:PEERS_WITH]-(a2:AS)\nWHERE r.rel = 0\nRETURN DISTINCT a2.asn AS sibling_asn\nLIMIT 100",
+            "canonical_cypher": "MATCH (:AS {asn: 2497})-[:SIBLING_OF]->(a:AS) RETURN a.asn"
+        },
+        {
+            "task_id": "24.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the distinct ip of IP nodes for which HostName with name 'google.com' resolves to.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 7.43,
+            "generated_cypher": "MATCH (hn:HostName {name: 'google.com'})-[:RESOLVES_TO]->(ip:IP) RETURN DISTINCT ip.ip",
+            "canonical_cypher": "MATCH (:HostName {name: 'google.com'})-[:RESOLVES_TO]->(i:IP) RETURN DISTINCT i.ip"
+        },
+        {
+            "task_id": "24.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What are the IP addresses for google.com?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 150.09,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:HostName {name: 'google.com'})-[:RESOLVES_TO]->(i:IP) RETURN DISTINCT i.ip"
+        },
+        {
+            "task_id": "25.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the asn of the AS which is the target of the AtlasMeasurement with id 17635549.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 54.38,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:AtlasMeasurement {id: 17635549})-[:TARGET]->(a:AS) RETURN a.asn"
+        },
+        {
+            "task_id": "25.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What is the ASN targeted by Atlas measurement 17635549?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 118.91,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:AtlasMeasurement {id: 17635549})-[:TARGET]->(a:AS) RETURN a.asn"
+        },
+        {
+            "task_id": "26.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the name of the HostName node which is the target of the AtlasMeasurement with id 17635549.",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 88.93,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:AtlasMeasurement {id: 17635549})-[:TARGET]->(h:HostName) RETURN h.name"
+        },
+        {
+            "task_id": "26.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What is the target hostname for Atlas measurement 17635549?",
+            "status": "SUCCESS",
+            "iterations_used": 6,
+            "time_seconds": 83.88,
+            "generated_cypher": "MATCH (am:AtlasMeasurement {id: 17635549})-[:TARGET]->(hn:HostName) RETURN hn.name AS target_hostname LIMIT 1",
+            "canonical_cypher": "MATCH (:AtlasMeasurement {id: 17635549})-[:TARGET]->(h:HostName) RETURN h.name"
+        },
+        {
+            "task_id": "27.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the ip of the IP node which is the target of AtlasMeasurement with id 17635549.",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 215.06,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:AtlasMeasurement {id: 17635549})-[:TARGET]->(i:IP) RETURN i.ip"
+        },
+        {
+            "task_id": "27.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What is the target IP address for Atlas measurement 17635549?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 93.8,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:AtlasMeasurement {id: 17635549})-[:TARGET]->(i:IP) RETURN i.ip"
+        },
+        {
+            "task_id": "28.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the id of the OpaqueID corresponding to Prefix with prefix 102.209.224.0/21. Return only the OpaqueID's id.",
+            "status": "SUCCESS",
+            "iterations_used": 4,
+            "time_seconds": 56.33,
+            "generated_cypher": "MATCH (p:Prefix {prefix: '102.209.224.0/21'})-[r:ASSIGNED]-(o:OpaqueID) RETURN o.id",
+            "canonical_cypher": "MATCH (:Prefix {prefix: '102.209.224.0/21'})-[:AVAILABLE]->(o:OpaqueID) RETURN o.id"
+        },
+        {
+            "task_id": "28.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What is the opaque id for 102.209.224.0/21?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 189.48,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:Prefix {prefix: '102.209.224.0/21'})-[:AVAILABLE]->(o:OpaqueID) RETURN o.id"
+        },
+        {
+            "task_id": "29.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find all the distinct Tag's labels that categorize the AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.54,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label AS TagLabel LIMIT 100",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "29.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Find all tags for AS2497.",
+            "status": "SUCCESS",
+            "iterations_used": 2,
+            "time_seconds": 18.27,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:CATEGORIZED]->(t:Tag) RETURN t.label",
+            "canonical_cypher": "MATCH (:AS {asn:2497})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+        },
+        {
+            "task_id": "30.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "From the Ranking with name 'Tranco top 1M' find the name of the DomainName that is ranked first.",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 285.1,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (d:DomainName)-[:RANK {rank: 1}]->(:Ranking {name: 'Tranco top 1M'}) RETURN d.name"
+        },
+        {
+            "task_id": "30.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What is the first domain name in 'Tranco top 1M'?",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 90.05,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (d:DomainName)-[:RANK {rank: 1}]->(:Ranking {name: 'Tranco top 1M'}) RETURN d.name"
+        },
+        {
+            "task_id": "31.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find population Estimate value for Country Japan with country_code 'JP'.",
+            "status": "SUCCESS",
+            "iterations_used": 7,
+            "time_seconds": 79.09,
+            "generated_cypher": "MATCH (c:Country {country_code: 'JP'}) RETURN c.name AS CountryName, null AS PopulationEstimate",
+            "canonical_cypher": "MATCH (:Country {country_code: 'JP'})-[p:POPULATION]-(:Estimate) RETURN p.value"
+        },
+        {
+            "task_id": "31.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "What is Japan's estimated population?",
+            "status": "SUCCESS",
+            "iterations_used": 7,
+            "time_seconds": 86.69,
+            "generated_cypher": "MATCH (c:Country {country_code: 'JP'}) RETURN c.name AS CountryName, NULL AS EstimatedPopulation",
+            "canonical_cypher": "MATCH (:Country {country_code: 'JP'})-[p:POPULATION]-(:Estimate) RETURN p.value"
+        },
+        {
+            "task_id": "32.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the number of AS in Country with country_code 'CN' and 'HK'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.68,
+            "generated_cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'NRO'}]-(c:Country) WHERE c.country_code IN ['CN', 'HK'] RETURN c.country_code, COUNT(DISTINCT a) AS NumberOfASes",
+            "canonical_cypher": "MATCH (a:AS)-[:COUNTRY]-(cc:Country) WHERE cc.country_code = 'CN' OR cc.country_code = 'HK' WITH cc.country_code AS code, count(DISTINCT a) AS c RETURN c"
+        },
+        {
+            "task_id": "32.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "What is the number of ASes registered in China and Hong Kong?",
+            "status": "SUCCESS",
+            "iterations_used": 2,
+            "time_seconds": 24.57,
+            "generated_cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'NRO'}]-(c:Country) WHERE c.country_code IN ['CN', 'HK'] WITH c.country_code AS country, COUNT(DISTINCT a) AS NumberOfASes RETURN country, NumberOfASes",
+            "canonical_cypher": "MATCH (a:AS)-[:COUNTRY]-(cc:Country) WHERE cc.country_code = 'CN' OR cc.country_code = 'HK' WITH cc.country_code AS code, count(DISTINCT a) AS c RETURN c"
+        },
+        {
+            "task_id": "33.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the total number of  AS in Country with country_code 'CN' that also orignate Prefixes.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 14.17,
+            "generated_cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'NRO'}]-(c:Country {country_code:'CN'}) MATCH (a)-[:ORIGINATE]-(:Prefix) RETURN count(DISTINCT a) AS total_as_originating_prefixes",
+            "canonical_cypher": "MATCH (:Country {country_code: 'CN'})-[:COUNTRY]-(as:AS)-[:ORIGINATE]-(:Prefix) RETURN count(DISTINCT as) AS totalASWithPrefix"
+        },
+        {
+            "task_id": "33.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "What is the number of Chinese ASes that originate prefixes in BGP?",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 46.24,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:Country {country_code: 'CN'})-[:COUNTRY]-(as:AS)-[:ORIGINATE]-(:Prefix) RETURN count(DISTINCT as) AS totalASWithPrefix"
+        },
+        {
+            "task_id": "34.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find all Facilities where AS with asn 4134 and AS with asn 23764 are located in.",
+            "status": "SUCCESS",
+            "iterations_used": 2,
+            "time_seconds": 20.35,
+            "generated_cypher": "MATCH (a1:AS {asn: 4134})-[:LOCATED_IN]->(f:Facility)<-[:LOCATED_IN]-(a2:AS {asn: 23764})\nRETURN f.name AS FacilityName, COLLECT(a1.asn) AS ASNs1, COLLECT(a2.asn) AS ASNs2\nLIMIT 10",
+            "canonical_cypher": "MATCH (a:AS)-[:LOCATED_IN]-(fac:Facility)-[:LOCATED_IN]-(b:AS) WHERE a.asn = 4134 AND b.asn = 23764 RETURN fac"
+        },
+        {
+            "task_id": "34.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Find the common facilities between AS4134 and AS23764.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 8.46,
+            "generated_cypher": "MATCH (a1:AS {asn: 4134})-[:LOCATED_IN]->(f:Facility)\nMATCH (a2:AS {asn: 23764})-[:LOCATED_IN]->(f)\nRETURN DISTINCT f.name AS common_facility_name, f.id AS common_facility_id\nLIMIT 100",
+            "canonical_cypher": "MATCH (a:AS)-[:LOCATED_IN]-(fac:Facility)-[:LOCATED_IN]-(b:AS) WHERE a.asn = 4134 AND b.asn = 23764 RETURN fac"
+        },
+        {
+            "task_id": "35.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the distinct country_code of Country where for Facilities where both AS with asn 4134 and AS with asn 23764 are located.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 55.11,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (a:AS)-[:LOCATED_IN]-(fac:Facility)-[:LOCATED_IN]-(b:AS) WHERE a.asn = 4134 AND b.asn = 23764 MATCH (fac)-[:COUNTRY]-(c:Country) RETURN DISTINCT c.country_code"
+        },
+        {
+            "task_id": "35.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Find the country codes for all the common facilities between AS4134 and AS23764.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 23.55,
+            "generated_cypher": "MATCH (f:Facility) WHERE f.name = 'Equinix FR4 - Frankfurt, West' OR f.name = 'Digital Realty Frankfurt FRA1-16' OR f.name = 'Equinix LD8 - London, Docklands' MATCH (f)-[:COUNTRY]->(c:Country) RETURN DISTINCT c.country_code AS CountryCode",
+            "canonical_cypher": "MATCH (a:AS)-[:LOCATED_IN]-(fac:Facility)-[:LOCATED_IN]-(b:AS) WHERE a.asn = 4134 AND b.asn = 23764 MATCH (fac)-[:COUNTRY]-(c:Country) RETURN DISTINCT c.country_code"
+        },
+        {
+            "task_id": "36.1",
+            "difficulty": "Hard technical prompt",
+            "prompt": "Find all ASes corresponding to the OpaqueID of AS with asn 4134 and AS with asn 23764. Then find the Country for facilities where all these ASes are. Return the distinct country_code and the corresponding list of ASes.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 120.11,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (a:AS)-[:ASSIGNED]-(oid:OpaqueID) WHERE a.asn IN [4134, 23764] WITH oid MATCH (oid)--(other:AS)--(fac:Facility)--(cc:Country) RETURN DISTINCT cc.country_code, collect(DISTINCT other.asn)"
+        },
+        {
+            "task_id": "36.2",
+            "difficulty": "Hard general prompt",
+            "prompt": "Find the country codes of facilities where for all ASes that correspond to the OpaqueID's of AS4134 and AS23764. Return the distinct country_code and the corresponding list of ASes.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 62.7,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (a:AS)-[:ASSIGNED]-(oid:OpaqueID) WHERE a.asn IN [4134, 23764] WITH oid MATCH (oid)--(other:AS)--(fac:Facility)--(cc:Country) RETURN DISTINCT cc.country_code, collect(DISTINCT other.asn)"
+        },
+        {
+            "task_id": "37.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find all nodes that have relationships to the Prefix with prefix 8.8.8.0/24. Do not take into account the direction of the relationships.",
+            "status": "SUCCESS",
+            "iterations_used": 3,
+            "time_seconds": 43.8,
+            "generated_cypher": "MATCH (p:Prefix {prefix: '8.8.8.0/24'})-- (related_node) WITH DISTINCT p, related_node RETURN p, related_node LIMIT 100",
+            "canonical_cypher": "MATCH (gdns:Prefix {prefix:'8.8.8.0/24'})--(neighbor) RETURN neighbor"
+        },
+        {
+            "task_id": "37.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Return everything that is related with 8.8.8.0/24.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 14.29,
+            "generated_cypher": "MATCH p = (:Prefix {prefix: '8.8.8.0/24'})--() RETURN p",
+            "canonical_cypher": "MATCH (gdns:Prefix {prefix:'8.8.8.0/24'})--(neighbor) RETURN neighbor"
+        },
+        {
+            "task_id": "38.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find the Country connected (reference_name 'nro.delegated_stats') with AS with asn 2497.",
+            "status": "SUCCESS",
+            "iterations_used": 2,
+            "time_seconds": 20.29,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:COUNTRY {reference_org: 'NRO'}]-(c:Country) RETURN c.country_code, c.name",
+            "canonical_cypher": "MATCH (iij:AS {asn:2497})-[{reference_name:'nro.delegated_stats'}]-(cc:Country) RETURN cc"
+        },
+        {
+            "task_id": "38.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "In which country is AS2497 registered in the delegated stats?",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 7.93,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:COUNTRY {reference_name: 'nro.delegated_stats'}]-(c:Country) RETURN c.country_code, c.name",
+            "canonical_cypher": "MATCH (iij:AS {asn:2497})-[{reference_name:'nro.delegated_stats'}]-(cc:Country) RETURN cc"
+        },
+        {
+            "task_id": "39.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the IXP where AS with asn 2497 is member of and then the Country corresponding to these IXP.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 10.54,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:MEMBER_OF]->(ix:IXP)-[:COUNTRY]->(c:Country) RETURN a.asn, ix.name AS IXP_Name, c.name AS Country_Name LIMIT 10",
+            "canonical_cypher": "MATCH (iij:AS {asn:2497})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix, cc"
+        },
+        {
+            "task_id": "39.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Which IXPs and corresponding countries is AS2497 member of?",
+            "status": "SUCCESS",
+            "iterations_used": 5,
+            "time_seconds": 42.64,
+            "generated_cypher": "MATCH (a:AS {asn: 2497})-[:MEMBER_OF]-(ix:IXP)-[:COUNTRY]-(c:Country) WITH DISTINCT ix, c, a.asn AS asn RETURN asn, ix.name AS IXP_Name, c.name AS Country_Name LIMIT 100",
+            "canonical_cypher": "MATCH (iij:AS {asn:2497})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix, cc"
+        },
+        {
+            "task_id": "40.1",
+            "difficulty": "Hard technical prompt",
+            "prompt": "Find all the DomainName nodes ranked in top 50000 that resolves to an IP that is part of a prefix originated by the AS with asn 2497.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 99.51,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(iij:AS {asn:2497}) WHERE r.rank < 50000 RETURN dn"
+        },
+        {
+            "task_id": "40.2",
+            "difficulty": "Hard general prompt",
+            "prompt": "Retrieve the top 50000 domain names associated with the IP addresses announce by AS2497.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 52.68,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(iij:AS {asn:2497}) WHERE r.rank < 50000 RETURN dn"
+        },
+        {
+            "task_id": "41.1",
+            "difficulty": "Medium technical prompt,Find all the Facility nodes located in Country with country_code 'CN' or 'HK' and count the number of ASes located in these facilities. Return the facility name and the number of ASes.\"",
+            "prompt": "MATCH (c:Country)--(f:Facility)--(a:AS) WHERE c.country_code = 'CN' OR c.country_code = 'HK' RETURN f.name, count(DISTINCT a) AS nb_as ORDER BY nb_as DESC",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 16.8,
+            "generated_cypher": "MATCH (c:Country) WHERE c.country_code = 'CN' OR c.country_code = 'HK' MATCH (f:Facility)-[:LOCATED_IN]-(a:AS)-[:COUNTRY {reference_org:'NRO'}]-(c) RETURN f.name, count(DISTINCT a) AS nb_as ORDER BY nb_as DESC",
+            "canonical_cypher": null
+        },
+        {
+            "task_id": "41.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Count the number of ASes for each facility in China and Hong Kong.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 9.45,
+            "generated_cypher": "MATCH (a:AS)-[:LOCATED_IN]-(f:Facility)-[:COUNTRY]->(c:Country)\nWHERE c.country_code IN ['CN', 'HK']\nRETURN f.name AS FacilityName, COUNT(DISTINCT a) AS AS_Count\nORDER BY AS_Count DESC\nLIMIT 100",
+            "canonical_cypher": "MATCH (c:Country)--(f:Facility)--(a:AS) WHERE c.country_code = 'CN' OR c.country_code = 'HK' RETURN f.name, count(DISTINCT a) AS nb_as ORDER BY nb_as DESC"
+        },
+        {
+            "task_id": "42.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find ASes for which the Country given by NRO has country_code 'CN' and return all the Facility nodes where these ASes are located in.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 138.23,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (net_country:Country)-[:COUNTRY {reference_org:'NRO'}]-(net:AS)-[:LOCATED_IN]-(fac:Facility) WHERE net_country.country_code = 'CN' RETURN fac"
+        },
+        {
+            "task_id": "42.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Find all the facilities where Chinese ASes are.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 134.54,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (net_country:Country)-[:COUNTRY {reference_org:'NRO'}]-(net:AS)-[:LOCATED_IN]-(fac:Facility) WHERE net_country.country_code = 'CN' RETURN fac"
+        },
+        {
+            "task_id": "43.1",
+            "difficulty": "Easy technical prompt",
+            "prompt": "Find all the AS nodes that are located in Facility nodes linked to Country nodes with country_code 'CN' or 'HK'.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 45.5,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (net:AS)-[:LOCATED_IN]-(fac:Facility)--(fac_country:Country) WHERE fac_country.country_code = 'HK' OR fac_country.country_code = 'CN' RETURN net"
+        },
+        {
+            "task_id": "43.2",
+            "difficulty": "Easy general prompt",
+            "prompt": "Retrieve all the ASes that are located in facilities in China or Hong Kong.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 40.55,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (net:AS)-[:LOCATED_IN]-(fac:Facility)--(fac_country:Country) WHERE fac_country.country_code = 'HK' OR fac_country.country_code = 'CN' RETURN net"
+        },
+        {
+            "task_id": "44.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the country_code for the Prefix nodes that are originated by AS nodes located in Country with country_code 'CN'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 37.42,
+            "generated_cypher": "MATCH (a:AS)-[:COUNTRY {reference_org: 'NRO'}]-(c:Country {country_code: 'CN'}) MATCH (a)-[:ORIGINATE]-(p:Prefix) RETURN DISTINCT c.country_code, p.prefix",
+            "canonical_cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'CN' RETURN pfx_country.country_code"
+        },
+        {
+            "task_id": "44.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Get the country code of prefixes announced by Chinese ASes.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 26.5,
+            "generated_cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'NRO'}]-(c:Country {country_code:'CN'}) MATCH (a)-[:ORIGINATE]-(p:Prefix) RETURN DISTINCT c.country_code, p.prefix",
+            "canonical_cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'CN' RETURN pfx_country.country_code"
+        },
+        {
+            "task_id": "45.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the country_code of Country nodes related to the Prefix nodes that originated from AS nodes located in Country with country_code 'HK'.",
+            "status": "SUCCESS",
+            "iterations_used": 1,
+            "time_seconds": 234.85,
+            "generated_cypher": "MATCH (:Country {country_code: 'HK'})<-[:COUNTRY {reference_org: 'NRO'}]-(a:AS)-[:ORIGINATE]-(p:Prefix)-[:COUNTRY]-(c:Country)\nRETURN DISTINCT c.country_code\nLIMIT 100",
+            "canonical_cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'HK' RETURN pfx_country.country_code"
+        },
+        {
+            "task_id": "45.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Get the country code of prefixes announced by ASes of Hong Kong.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 78.21,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'HK' RETURN pfx_country.country_code"
+        },
+        {
+            "task_id": "46.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find the asn of the AS with the largest number of Prefix nodes located in Country with country_code 'CN' or 'HK'.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 202.45,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (pfx_country:Country)-[:COUNTRY]-(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE pfx_country.country_code = 'HK' OR pfx_country.country_code = 'CN' WITH net, COUNT(distinct pfx) as nb_pfx RETURN net.asn ORDER BY nb_pfx DESC LIMIT 1"
+        },
+        {
+            "task_id": "46.2",
+            "difficulty": "Medium general prompt",
+            "prompt": "Get the As with the largest number of prefixes in China or Hong Kong.",
+            "status": "FAILED",
+            "iterations_used": 0,
+            "time_seconds": 40.53,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (pfx_country:Country)-[:COUNTRY]-(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE pfx_country.country_code = 'HK' OR pfx_country.country_code = 'CN' WITH net, COUNT(distinct pfx) as nb_pfx RETURN net.asn ORDER BY nb_pfx DESC LIMIT 1"
+        },
+        {
+            "task_id": "47.1",
+            "difficulty": "Medium technical prompt",
+            "prompt": "Find all the corresponding IP nodes, Prefix nodes and AS nodes for all the HostName nodes which name ends with '.cn' and that are ranked below 10000.",
+            "status": "FAILED",
+            "iterations_used": 9,
+            "time_seconds": 1065.4,
+            "generated_cypher": "None",
+            "canonical_cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.cn' AND r.rank<10000 RETURN ip, pfx, net"
+        }
+    ]
+}
