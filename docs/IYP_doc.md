@@ -38,6 +38,7 @@ An AS operates in multiple countries. To find its true Home/Registration Country
 | `:RIRPrefix` / `:RPKIPrefix` / `:IANAPrefix` / `:PeeringLAN` | Subtypes of Prefix for specific allocations/registrations. PK: `.prefix`. |
 | `:IP` | IPv4/IPv6 address. PK: `.ip`. Property: `.af`. Can have a `:Resolver` label. |
 | `:IXP` | Internet Exchange Point. Properties: `.name`. Linked via `(:IXP)-[:COUNTRY]->(:Country)`. Size is CALCULATED via `(:AS)-[:MEMBER_OF]->(:IXP)` relationships. |
+| `:URL` | A full URL string. PK: `.url` |
 | `:DomainName` | DNS domain name (not FQDN). PK: `.name`. Property: `.rank` (Tranco/Umbrella global rank). |
 | `:HostName` | Fully Qualified Domain Name (FQDN). PK: `.name`. |
 | `:AuthoritativeNameServer` | Authoritative DNS nameserver. PK: `.name`. |
@@ -46,7 +47,7 @@ An AS operates in multiple countries. To find its true Home/Registration Country
 | `:BGPCollector` | RIPE RIS / RouteViews collector. PK: `.name`. Property: `.project`. |
 | `:Tag` | Output of manual/automated classification. PK: `.label`. |
 | `:Name` | A name associated to a network resource (e.g., AS name). PK: `.name`. |
-| `:Ranking` | Specific ranking (e.g., Tranco, IHR). Associated via `[:RANK]` relationships. |
+| `:Ranking` | Specific ranking (e.g., Tranco, IHR). Associated via `[:RANK]` relationships. |[:RANK {rank: X}]
 | `:AtlasProbe` / `:AtlasMeasurement` | RIPE Atlas entities. PK: `.id`. |
 | Various IDs | `:CaidaIXID`, `:CaidaOrgID`, `:OpaqueID`, `:PeeringdbFacID`, `:PeeringdbIXID`, `:PeeringdbNetID`, `:PeeringdbOrgID`. |
 
