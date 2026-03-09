@@ -8,24 +8,15 @@ from DataBase.IYP_connector import test_cypher_on_iyp
 from utils.llm_caller import call_llm_with_tracking
 from pydantic import BaseModel, Field
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-logger = logging.getLogger(__name__)
-
-# Lock for safe concurrent file writing and stats updates
+logger    = logging.getLogger(__name__)
 save_lock = threading.Lock()
 
 class SemanticComparison(BaseModel):
-    """Data structure for semantic evaluation via LLM (Functional Correctness)."""
-    is_equivalent: bool = Field(
-        description="True if the generated data provides the same factual answer as the canonical data, regardless of column names or row order."
-    )
-    reasoning: str = Field(
-        description="A concise technical justification explaining why the results are or are not semantically identical."
-    )
+    is_equivalent: bool = Field(description="True if the generated data provides the same factual answer as the canonical data, regardless of column names or row order.")
+    reasoning: str      = Field(description="A concise technical justification explaining why the results are or are not semantically identical.")
 
 def execute_queries_in_parallel(generated_cypher: str, canonical_cypher: str):
-    """Executes both queries in parallel on Neo4j."""
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         future_gen = executor.submit(test_cypher_on_iyp, generated_cypher)
         future_can = executor.submit(test_cypher_on_iyp, canonical_cypher)
@@ -34,7 +25,6 @@ def execute_queries_in_parallel(generated_cypher: str, canonical_cypher: str):
     return res_gen, res_can
 
 def truncate_data_structure(data, max_str_len=500):
-    """Truncates long strings to save LLM context tokens."""
     if isinstance(data, dict):
         return {k: truncate_data_structure(v, max_str_len) for k, v in data.items()}
     elif isinstance(data, list):
@@ -44,7 +34,6 @@ def truncate_data_structure(data, max_str_len=500):
     return data
 
 def format_db_result(db_result):
-    """Prepares database result for the LLM prompt."""
     if not db_result.get("success"):
         return f"Neo4j Error: {db_result.get('message', 'Unknown error')}"
     
@@ -54,7 +43,6 @@ def format_db_result(db_result):
     safe_data = truncate_data_structure(data[:row_limit], max_str_len=500)
     output = json.dumps(safe_data, ensure_ascii=False, default=str, indent=2)
     
-    # Safety cap for extremely large single-row payloads
     if len(output) > 8000:
         output = output[:8000] + "\n... [SAFETY TRUNCATION]"
     if is_row_truncated:
@@ -63,14 +51,8 @@ def format_db_result(db_result):
     return output
 
 def evaluate_semantic_equivalence(question: str, res_gen: dict, res_can: dict, session_id: str, task_id: str):
-    """Requests LLM comparison using the Pydantic schema."""
-    variables = {
-        "question": question,
-        "generated_result": format_db_result(res_gen),
-        "canonical_result": format_db_result(res_can)
-    }
+    variables = {"question": question,"generated_result": format_db_result(res_gen),"canonical_result": format_db_result(res_can)}
     
-    # Enforces structured output via Pydantic
     response = call_llm_with_tracking(
         prompt_name="iyp-results-comparator",
         variables=variables,
@@ -118,7 +100,6 @@ def process_single_task(task, session_id, benchmark_data, output_json_path):
             logger.error(f"Task {task_id}: Internal Error: {str(e)}")
             task["semantic_evaluation"] = {"is_equivalent": False, "reasoning": f"Internal Exception during execution: {str(e)}"}
 
-    # Thread-safe stats update and file saving
     with save_lock:
         is_success = task["semantic_evaluation"].get("is_equivalent", False)
         
@@ -126,9 +107,8 @@ def process_single_task(task, session_id, benchmark_data, output_json_path):
         global_stats = stats_run.setdefault("global", {})
         diff_stats = stats_run.setdefault("by_difficulty", {}).setdefault(difficulty, {})
         
-        # Increment counters
         key_success = "success_compa"
-        key_failed = "failed_compa"
+        key_failed  = "failed_compa"
         
         if is_success:
             global_stats[key_success] = global_stats.get(key_success, 0) + 1
@@ -137,11 +117,9 @@ def process_single_task(task, session_id, benchmark_data, output_json_path):
             global_stats[key_failed] = global_stats.get(key_failed, 0) + 1
             diff_stats[key_failed] = diff_stats.get(key_failed, 0) + 1
 
-        # Recalculate global success rate
         total_eval = global_stats.get(key_success, 0) + global_stats.get(key_failed, 0)
         global_stats["success_rate_compa"] = round((global_stats[key_success] / total_eval) * 100, 2) if total_eval > 0 else 0
 
-        # Incremental save
         try:
             with open(output_json_path, 'w', encoding='utf-8') as out_f:
                 json.dump(benchmark_data, out_f, indent=4, ensure_ascii=False)
@@ -167,12 +145,12 @@ def run_parallel_post_benchmark(input_json_path: str, output_json_path: str, max
         return
         
     original_session = benchmark_data.get("session_id", f"run_{int(time.time())}")
-    eval_session_id = f"{original_session}_SEMANTIC_EVAL"
-    details = benchmark_data.get("details", [])
+    eval_session_id  = f"{original_session}_SEMANTIC_EVAL"
+    details          = benchmark_data.get("details", [])
     
-    # Initialize stats counters
-    stats_run = benchmark_data.setdefault("stats_current_run", {})
-    global_stats = stats_run.setdefault("global", {})
+    stats_run        = benchmark_data.setdefault("stats_current_run", {})
+    global_stats     = stats_run.setdefault("global", {})
+
     global_stats.update({"success_compa": 0, "failed_compa": 0, "success_rate_compa": 0})
     
     by_diff = stats_run.setdefault("by_difficulty", {})
@@ -191,15 +169,15 @@ def run_parallel_post_benchmark(input_json_path: str, output_json_path: str, max
     duration = time.time() - start_time
     
     final_success = benchmark_data["stats_current_run"]["global"]["success_compa"]
-    final_failed = benchmark_data["stats_current_run"]["global"]["failed_compa"]
-    final_rate = benchmark_data["stats_current_run"]["global"]["success_rate_compa"]
+    final_failed  = benchmark_data["stats_current_run"]["global"]["failed_compa"]
+    final_rate    = benchmark_data["stats_current_run"]["global"]["success_rate_compa"]
     
     print(f"\n🏁 Evaluation finished in {duration:.2f}s! Results saved in {output_json_path}")
     print(f"📊 Final Comparative Score: {final_success} Success | {final_failed} Failures ({final_rate}%)")
 
 if __name__ == "__main__":
-    # Point this to your latest benchmark output
-    INPUT_FILE = "benchmark_report_20260309_0019.json" 
-    OUTPUT_FILE = "benchmark_report_SEMANTIC_EVAL_PARALLEL_last_dimanche_3.json"
     
+    INPUT_FILE  = "benchmark_report_20260309_1103.json" 
+    OUTPUT_FILE = "benchmark_report_SEMANTIC_EVAL_PARALLEL_last_lundi_last_before_rag.json"
+
     run_parallel_post_benchmark(INPUT_FILE, OUTPUT_FILE, max_parallel_tasks=20)

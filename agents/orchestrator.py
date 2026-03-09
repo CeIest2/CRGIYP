@@ -1,6 +1,7 @@
 import logging
 import uuid
 import json
+import traceback
 from langfuse import Langfuse
 
 from utils.helpers import truncate_deep_lists
@@ -17,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 def resolve_query_with_retries(target_question: str, context_data: dict, oracle_expectations: dict, session_id: str, run_id: str, max_retries: int):
-    history = "No previous attempts."
-    last_cypher = None
-    last_data = [] 
+    history              = "No previous attempts."
+    last_cypher          = None
+    last_data            = [] 
     MAX_ROWS_FOR_CONTEXT = 50 
     
     prompt_question = target_question
@@ -27,7 +28,7 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
         prompt_question += (
             f"\n\n[INFO CRITIQUE : Voici le résumé des étapes précédentes de notre réflexion.\n"
             f"INTERDICTION FORMELLE : Ne crée JAMAIS de listes géantes avec IN [...] contenant des dizaines d'IDs.\n"
-            f"À la place, réutilise la logique de la requête 'cypher_precedent' pour construire une seule requête Cypher unifiée (par exemple en utilisant des sous-requêtes, des clauses WITH, ou en prolongeant le MATCH).]\n"
+            f"À la place, réutilise la logique de la requête 'cypher_precedent' pour construire une seule requête Cypher unifiée.]\n"
             f"{json.dumps(context_data, indent=2)}"
         )
             
@@ -36,17 +37,28 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
         attempt_prefix = f"[Attempt {current_attempt}]"
         print(f"\n--- 🔄 ATTEMPT {current_attempt}/{max_retries} pour : '{target_question[:50]}...' ---")
 
-        gen_result = generate_cypher_query(user_question=prompt_question, session_id=session_id, trace_id=run_id, previous_history=history, trace_name=f"{attempt_prefix} Cypher Generation")
+        try:
+            gen_result = generate_cypher_query(user_question=prompt_question, session_id=session_id, trace_id=run_id, previous_history=history, trace_name=f"{attempt_prefix} Cypher Generation")
+        except Exception as e:
+            logger.error(f"💥 CRASH PYTHON dans generate_cypher_query: {e}")
+            logger.error(traceback.format_exc())
+            break
     
         if not gen_result.get("success"):
-            print(f"❌ Critical Generation Error: {gen_result.get('error_message')}")
+            print(f"❌ Critical Generation Error (LLM Parsing/Timeout): {gen_result.get('error_message')}")
             break
 
         cypher      = gen_result["cypher"]
         explanation = gen_result["explanation"]
-        db_result   = test_cypher_on_iyp_traced(cypher)
         last_cypher = cypher
-        last_data   = db_result.get('data', [])
+        
+        try:
+            db_result   = test_cypher_on_iyp_traced(cypher)
+            last_data   = db_result.get('data', [])
+        except Exception as e:
+            logger.error(f"💥 CRASH PYTHON dans test_cypher_on_iyp_traced: {e}")
+            logger.error(traceback.format_exc())
+            db_result = {"success": False, "error_message": f"Python crash: {str(e)}", "data": []}
 
         safe_data    = truncate_deep_lists(last_data, max_items=10)
         sample_limit = 20 
@@ -54,7 +66,12 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
         
         db_output_for_llm = {"success": db_result["success"],"data": safe_data if db_result["success"] else [],"row_count": len(last_data),"is_truncated": is_truncated,"error_message": db_result.get("error_message")}
         
-        eval_verdict = evaluate_cypher_result(question=target_question, cypher=cypher, explanation=explanation, db_output=db_output_for_llm, session_id=session_id, trace_id=run_id, oracle_expectations=oracle_expectations, trace_name=f"{attempt_prefix} Evaluation")
+        try:
+            eval_verdict = evaluate_cypher_result(question=target_question, cypher=cypher, explanation=explanation, db_output=db_output_for_llm, session_id=session_id, trace_id=run_id, oracle_expectations=oracle_expectations, trace_name=f"{attempt_prefix} Evaluation")
+        except Exception as e:
+            logger.error(f"💥 CRASH PYTHON dans evaluate_cypher_result: {e}")
+            logger.error(traceback.format_exc())
+            eval_verdict = {"is_valid": False, "error_type": "PYTHON_CRASH", "analysis": str(e)}
 
         if eval_verdict.get("is_valid"):
             print(f"✅ SUCCESS at attempt {current_attempt}!")
@@ -70,9 +87,14 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
             print(f"⚠️ Validation Failed [{error_type}]. Launching Investigator...")
             
             if current_attempt < max_retries:
-                investigation_result = run_investigation(question=target_question, failed_cypher=cypher, error_message=f"Error Type: {error_type} | Analysis: {analysis}", session_id=session_id, trace_id=run_id, previous_history=history,trace_prefix=attempt_prefix )
-                
-                investigation_report = investigation_result.get("report", "No report.")
+                try:
+                    investigation_result = run_investigation(question=target_question, failed_cypher=cypher, error_message=f"Error Type: {error_type} | Analysis: {analysis}", session_id=session_id, trace_id=run_id, previous_history=history,trace_prefix=attempt_prefix )
+                    investigation_report = investigation_result.get("report", "No report.")
+                except Exception as e:
+                    logger.error(f"💥 CRASH PYTHON dans run_investigation: {e}")
+                    logger.error(traceback.format_exc())
+                    investigation_report = f"Investigator crashed: {str(e)}"
+
                 print(f"🕵️‍♂️ Investigator Report: {investigation_report}")
 
                 attempt_summary = (
@@ -92,14 +114,19 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
     return {"status": "FAILED", "iterations": max_retries,"cypher": last_cypher, "data": last_data[:MAX_ROWS_FOR_CONTEXT] if last_data else [] }
 
 
-def run_autonomous_loop(question: str, max_retries: int = 5, session_id: str = None):
+def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = None):
     run_id = uuid.uuid4().hex
     if not session_id:  
         session_id = f"session_{uuid.uuid4().hex[:8]}"
     
     with langfuse.start_as_current_observation(name="Autonomous_Cypher_Pipeline", as_type="span", trace_context={"trace_id": run_id, "session_id": session_id}, input={"question": question}) as main_span:
 
-        oracle_res          = get_query_expectations(question, session_id=session_id, trace_id=run_id)
+        try:
+            oracle_res = get_query_expectations(question, session_id=session_id, trace_id=run_id)
+        except Exception as e:
+            logger.error(f"💥 CRASH PYTHON dans get_query_expectations: {e}")
+            oracle_res = {"success": False}
+            
         oracle_expectations = None
         implicit_filters    = "None"
         
@@ -108,7 +135,12 @@ def run_autonomous_loop(question: str, max_retries: int = 5, session_id: str = N
             implicit_filters = oracle_res.get("implicit_filters") or "None"
 
         print("\n--- 🧠 Décomposition de la question ---")
-        decomposer_res = decompose_query(question, oracle_filters=implicit_filters, session_id=session_id, trace_id=run_id)
+        try:
+            decomposer_res = decompose_query(question, oracle_filters=implicit_filters, session_id=session_id, trace_id=run_id)
+        except Exception as e:
+            logger.error(f"💥 CRASH PYTHON dans decompose_query: {e}")
+            decomposer_res = {"is_complex": False, "sub_questions": []}
+            
         is_complex     = decomposer_res.get("is_complex", False)
         sub_questions  = decomposer_res.get("sub_questions", [])
         context_data   = {} 
@@ -121,17 +153,17 @@ def run_autonomous_loop(question: str, max_retries: int = 5, session_id: str = N
                 intent = sq.get("intent")
                 print(f"\n>>> 🏃 Exécution de l'Étape {step_num}: {intent}")
                 
-                step_result = resolve_query_with_retries(target_question=intent, context_data=context_data, oracle_expectations=oracle_expectations, session_id=session_id, run_id=run_id, max_retries=8)
+                step_result = resolve_query_with_retries(target_question=intent, context_data=context_data, oracle_expectations=None, session_id=session_id, run_id=run_id, max_retries=max_retries)
 
                 if step_result["status"] == "SUCCESS":
                     context_data[f"Etape_{step_num}"] = {"intention": intent,"cypher_precedent": step_result["cypher"],"echantillon_donnees": step_result["data"][:8] if step_result["data"] else [], "nombre_total_resultats": len(step_result["data"]) if step_result["data"] else 0}
                 else:
-                    print(f"❌ Échec de l'étape {step_num}. Impossible de continuer l'enquête.")
+                    print(f"❌ Échec critique de l'étape {step_num}. L'agent n'a pas pu trouver la donnée nécessaire pour continuer.")
                     main_span.update(level="ERROR", status_message=f"Échec à l'étape {step_num}")
-                    return {"status": "FAILED", "reason": f"Failed at sub-question {step_num}"}
+                    return {"status": "FAILED", "reason": f"Failed at sub-question {step_num}","iterations": step_result.get("iterations", max_retries),"cypher": step_result.get("cypher", "None generated"),"data": []}
             
             print("\n>>> 🏁 Lancement de la génération FINALE avec tous les indices récoltés")
-            final_result = resolve_query_with_retries(target_question=f"Utilise les indices fournis pour répondre à la question initiale : {question}", context_data=context_data, oracle_expectations=oracle_expectations, session_id=session_id, run_id=run_id, max_retries=5)
+            final_result = resolve_query_with_retries(target_question=f"Utilise les indices fournis pour répondre à la question initiale : {question}", context_data=context_data, oracle_expectations=oracle_expectations, session_id=session_id, run_id=run_id, max_retries=max_retries)
             
             if final_result["status"] == "SUCCESS":
                 main_span.update(output={"final_cypher": final_result["cypher"], "data": final_result["data"]})
@@ -146,22 +178,7 @@ def run_autonomous_loop(question: str, max_retries: int = 5, session_id: str = N
             return final_result
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
-    q = "Get the japanese ASes that appear in the top 10 of IHR’s rankings in Japan. Then find the IXPs where these ASes are member of. Return the distinct ASNs and IXP name." 
+    q = "Find all the AS nodes that are located in Facility nodes linked to Country nodes with country_code 'CN' or 'HK'."
     result = run_autonomous_loop(q)
     print("\nFinal Result:", json.dumps(result, indent=2))

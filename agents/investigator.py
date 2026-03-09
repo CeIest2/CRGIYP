@@ -31,23 +31,9 @@ def run_investigation(question: str, failed_cypher: str, error_message: str, ses
 
     schema_doc = get_schema_doc()
     
-    diag_vars = {
-        "schema_doc": schema_doc,
-        "question": question, 
-        "failed_cypher": failed_cypher, 
-        "error_message": error_message, 
-        "previous_history": previous_history
-    }
+    diag_vars = {"schema_doc": schema_doc,"question": question, "failed_cypher": failed_cypher, "error_message": error_message, "previous_history": previous_history}
     
-    diag_response = call_llm_with_tracking(
-        prompt_name="iyp-investigator-diagnostic", 
-        variables=diag_vars, 
-        session_id=session_id, 
-        trace_id=trace_id, 
-        trace_name=f"{trace_prefix} Investigator Diagnostic".strip(), 
-        tags=["investigator"], 
-        pydantic_schema=InvestigatorDiagnostic
-    )
+    diag_response = call_llm_with_tracking(prompt_name="iyp-investigator-diagnostic",   variables=diag_vars, session_id=session_id, trace_id=trace_id, trace_name=f"{trace_prefix} Investigator Diagnostic".strip(), tags=["investigator"], pydantic_schema=InvestigatorDiagnostic)
 
     if not diag_response["success"]:
         return {"report": f"Investigator Error (Diagnostic): {diag_response['error_message']}", "queries_tested": []}
@@ -73,21 +59,9 @@ def run_investigation(question: str, failed_cypher: str, error_message: str, ses
         else:
             test_results_summary.append(f"Test Query: {q}\nResult: ERROR - {db_res.get('message')}")
 
-    synth_vars = {
-        "question": question, 
-        "failed_cypher": failed_cypher, 
-        "test_results": "\n\n".join(test_results_summary)
-    }
+    synth_vars = {"question": question, "failed_cypher": failed_cypher, "test_results": "\n\n".join(test_results_summary)}
     
-    synth_response = call_llm_with_tracking(
-        prompt_name="iyp-investigator-synthesis", 
-        variables=synth_vars, 
-        session_id=session_id, 
-        trace_id=trace_id, 
-        trace_name=f"{trace_prefix} Investigator Synthesis".strip(), 
-        tags=["investigator"], 
-        pydantic_schema=InvestigatorSynthesis
-    )
+    synth_response = call_llm_with_tracking(prompt_name="iyp-investigator-synthesis", variables=synth_vars, session_id=session_id, trace_id=trace_id, trace_name=f"{trace_prefix} Investigator Synthesis".strip(), tags=["investigator"], pydantic_schema=InvestigatorSynthesis  )
 
     if synth_response["success"]:
         synth_data = synth_response["content"] 

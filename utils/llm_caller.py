@@ -28,11 +28,7 @@ def _build_tracking_config(session_id: str, trace_name: str, tags: list, trace_i
     if trace_id:
         metadata["langfuse_trace_id"] = trace_id 
     
-    return {
-        "callbacks": [CallbackHandler()],
-        "metadata": metadata,
-        "run_name": trace_name
-    }
+    return {"callbacks": [CallbackHandler()],"metadata": metadata,"run_name": trace_name}
 
 def call_llm_with_tracking(
     prompt_name: str, 
@@ -59,7 +55,6 @@ def call_llm_with_tracking(
         tracking_config = _build_tracking_config(session_id, trace_name, tags, trace_id=trace_id)
         tracking_config["run_name"] = trace_name
         
-        # Le pipeline est ultra simple
         if pydantic_schema:
             chain = prompt_template | llm.with_structured_output(pydantic_schema)
         else:
@@ -78,6 +73,12 @@ def call_llm_with_tracking(
     except Exception as e:
         logger.error(f"Échec de l'exécution LLM: {e}")
         return {"success": False, "content": None, "error_message": str(e)}
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
