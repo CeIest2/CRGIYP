@@ -192,4 +192,4 @@ def run_cyphereval_benchmark(csv_file_path: str, limit: int = None, start_at: in
     logger.info(f"📝 Final report saved in '{final_output}'")
 
 if __name__ == "__main__":
-    run_cyphereval_benchmark("variation-B.csv", limit=100, start_at=0, max_workers=20)
+    run_cyphereval_benchmark("variation-B.csv", limit=None, start_at=0, max_workers=15)
