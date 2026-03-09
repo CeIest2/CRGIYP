@@ -11,13 +11,14 @@ from agents.evaluator import evaluate_cypher_result
 from agents.investigator import run_investigation 
 from agents.decomposer import decompose_query
 from DataBase.IYP_connector import test_cypher_on_iyp_traced
+from DataBase.rag_retriever import get_relevant_examples, format_rag_context
 
 langfuse = Langfuse()
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 
-def resolve_query_with_retries(target_question: str, context_data: dict, oracle_expectations: dict, session_id: str, run_id: str, max_retries: int):
+def resolve_query_with_retries(target_question: str, context_data: dict, oracle_expectations: dict, session_id: str, run_id: str, max_retries: int, rag_examples: str = ""):
     history              = "No previous attempts."
     last_cypher          = None
     last_data            = [] 
@@ -38,7 +39,14 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
         print(f"\n--- 🔄 ATTEMPT {current_attempt}/{max_retries} pour : '{target_question[:50]}...' ---")
 
         try:
-            gen_result = generate_cypher_query(user_question=prompt_question, session_id=session_id, trace_id=run_id, previous_history=history, trace_name=f"{attempt_prefix} Cypher Generation")
+            gen_result = generate_cypher_query(
+                user_question=prompt_question, 
+                session_id=session_id, 
+                trace_id=run_id, 
+                previous_history=history, 
+                trace_name=f"{attempt_prefix} Cypher Generation",
+                rag_examples=rag_examples 
+            )
         except Exception as e:
             logger.error(f"💥 CRASH PYTHON dans generate_cypher_query: {e}")
             logger.error(traceback.format_exc())
@@ -67,7 +75,16 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
         db_output_for_llm = {"success": db_result["success"],"data": safe_data if db_result["success"] else [],"row_count": len(last_data),"is_truncated": is_truncated,"error_message": db_result.get("error_message")}
         
         try:
-            eval_verdict = evaluate_cypher_result(question=target_question, cypher=cypher, explanation=explanation, db_output=db_output_for_llm, session_id=session_id, trace_id=run_id, oracle_expectations=oracle_expectations, trace_name=f"{attempt_prefix} Evaluation")
+            eval_verdict = evaluate_cypher_result(
+                question=target_question, 
+                cypher=cypher, 
+                explanation=explanation, 
+                db_output=db_output_for_llm, 
+                session_id=session_id, 
+                trace_id=run_id, 
+                oracle_expectations=oracle_expectations, 
+                trace_name=f"{attempt_prefix} Evaluation"
+            )
         except Exception as e:
             logger.error(f"💥 CRASH PYTHON dans evaluate_cypher_result: {e}")
             logger.error(traceback.format_exc())
@@ -123,9 +140,23 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
 
         try:
             oracle_res = get_query_expectations(question, session_id=session_id, trace_id=run_id)
+            technical_intent = oracle_res.get("technical_translation", "")
+
+            logger.info("Récupération des exemples RAG en cours...")
+            
+            trace_obj = langfuse.trace(id=run_id, session_id=session_id)
+            rag_span = trace_obj.span(name="Global_RAG_Retrieval", input={"search_intent": technical_intent})
+            
+            raw_examples = get_relevant_examples(technical_intent, top_k=3)
+            rag_context_text = format_rag_context(raw_examples)
+            
+            rag_span.update(output={"retrieved_examples": raw_examples})
+            rag_span.end()
+            
         except Exception as e:
-            logger.error(f"💥 CRASH PYTHON dans get_query_expectations: {e}")
+            logger.error(f"💥 CRASH PYTHON dans get_query_expectations ou RAG: {e}")
             oracle_res = {"success": False}
+            rag_context_text = "No relevant examples found." 
             
         oracle_expectations = None
         implicit_filters    = "None"
@@ -136,7 +167,13 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
 
         print("\n--- 🧠 Décomposition de la question ---")
         try:
-            decomposer_res = decompose_query(question, oracle_filters=implicit_filters, session_id=session_id, trace_id=run_id)
+            decomposer_res = decompose_query(
+                question, 
+                oracle_filters=implicit_filters, 
+                session_id=session_id, 
+                trace_id=run_id,
+                rag_examples=rag_context_text 
+            )
         except Exception as e:
             logger.error(f"💥 CRASH PYTHON dans decompose_query: {e}")
             decomposer_res = {"is_complex": False, "sub_questions": []}
@@ -153,17 +190,50 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
                 intent = sq.get("intent")
                 print(f"\n>>> 🏃 Exécution de l'Étape {step_num}: {intent}")
                 
-                step_result = resolve_query_with_retries(target_question=intent, context_data=context_data, oracle_expectations=None, session_id=session_id, run_id=run_id, max_retries=max_retries)
+                logger.info(f"🔍 Recherche RAG spécifique pour l'étape {step_num}...")
+                
+                # 🔥 AJOUT DU TRACING LANGFUSE POUR LE RAG PAR ÉTAPE (MULTI-HOP)
+                trace_obj = langfuse.trace(id=run_id, session_id=session_id)
+                step_rag_span = trace_obj.span(name=f"Step_{step_num}_RAG_Retrieval", input={"search_intent": intent})
+                
+                step_raw_examples = get_relevant_examples(intent, top_k=2) 
+                step_rag_context = format_rag_context(step_raw_examples)
+                
+                step_rag_span.update(output={"retrieved_examples": step_raw_examples})
+                step_rag_span.end()
+                
+                step_result = resolve_query_with_retries(
+                    target_question=intent, 
+                    context_data=context_data, 
+                    oracle_expectations=None, 
+                    session_id=session_id, 
+                    run_id=run_id, 
+                    max_retries=max_retries,
+                    rag_examples=step_rag_context 
+                )
 
                 if step_result["status"] == "SUCCESS":
-                    context_data[f"Etape_{step_num}"] = {"intention": intent,"cypher_precedent": step_result["cypher"],"echantillon_donnees": step_result["data"][:8] if step_result["data"] else [], "nombre_total_resultats": len(step_result["data"]) if step_result["data"] else 0}
+                    context_data[f"Etape_{step_num}"] = {
+                        "intention": intent,
+                        "cypher_precedent": step_result["cypher"],
+                        "echantillon_donnees": step_result["data"][:8] if step_result["data"] else [], 
+                        "nombre_total_resultats": len(step_result["data"]) if step_result["data"] else 0
+                    }
                 else:
                     print(f"❌ Échec critique de l'étape {step_num}. L'agent n'a pas pu trouver la donnée nécessaire pour continuer.")
                     main_span.update(level="ERROR", status_message=f"Échec à l'étape {step_num}")
                     return {"status": "FAILED", "reason": f"Failed at sub-question {step_num}","iterations": step_result.get("iterations", max_retries),"cypher": step_result.get("cypher", "None generated"),"data": []}
             
             print("\n>>> 🏁 Lancement de la génération FINALE avec tous les indices récoltés")
-            final_result = resolve_query_with_retries(target_question=f"Utilise les indices fournis pour répondre à la question initiale : {question}", context_data=context_data, oracle_expectations=oracle_expectations, session_id=session_id, run_id=run_id, max_retries=max_retries)
+            final_result = resolve_query_with_retries(
+                target_question=f"Utilise les indices fournis pour répondre à la question initiale : {question}", 
+                context_data=context_data, 
+                oracle_expectations=oracle_expectations, 
+                session_id=session_id, 
+                run_id=run_id, 
+                max_retries=max_retries,
+                rag_examples=rag_context_text 
+            )
             
             if final_result["status"] == "SUCCESS":
                 main_span.update(output={"final_cypher": final_result["cypher"], "data": final_result["data"]})
@@ -171,7 +241,15 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
 
         else:
             print("🎯 Question simple détectée. Résolution directe sans étapes.")
-            final_result = resolve_query_with_retries(target_question=question, context_data={}, oracle_expectations=oracle_expectations, session_id=session_id, run_id=run_id, max_retries=max_retries)
+            final_result = resolve_query_with_retries(
+                target_question=question, 
+                context_data={}, 
+                oracle_expectations=oracle_expectations, 
+                session_id=session_id, 
+                run_id=run_id, 
+                max_retries=max_retries,
+                rag_examples=rag_context_text
+            )
             
             if final_result["status"] == "SUCCESS":
                 main_span.update(output={"final_cypher": final_result["cypher"], "data": final_result["data"]})
@@ -179,6 +257,6 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
 
 
 if __name__ == "__main__":
-    q = "Find all the AS nodes that are located in Facility nodes linked to Country nodes with country_code 'CN' or 'HK'."
+    q = "Count the number of United States domains ranked in the top 100k by AS and, if possible, give the AS name specified by RIPE NCC. Return the ASN, AS name and count of domain names in descending order."
     result = run_autonomous_loop(q)
     print("\nFinal Result:", json.dumps(result, indent=2))

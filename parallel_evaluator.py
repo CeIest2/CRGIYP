@@ -176,8 +176,8 @@ def run_parallel_post_benchmark(input_json_path: str, output_json_path: str, max
     print(f"📊 Final Comparative Score: {final_success} Success | {final_failed} Failures ({final_rate}%)")
 
 if __name__ == "__main__":
-    
-    INPUT_FILE  = "benchmark_report_20260309_1103.json" 
-    OUTPUT_FILE = "benchmark_report_SEMANTIC_EVAL_PARALLEL_last_lundi_last_before_rag.json"
+
+    INPUT_FILE  = "benchmark_report_20260309_1626.json" 
+    OUTPUT_FILE = "benchmark_report_SEMANTIC_EVAL_PARALLEL_last_lundi_first_rag.json"
 
     run_parallel_post_benchmark(INPUT_FILE, OUTPUT_FILE, max_parallel_tasks=20)

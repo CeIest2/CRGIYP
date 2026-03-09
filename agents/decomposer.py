@@ -16,10 +16,19 @@ class QueryDecomposition(BaseModel):
     reasoning: str                   = Field(description="Step-by-step logic explaining why this requires 1 or multiple steps based on the graph topology. If it's a continuous path, state clearly that it should be 1 step.")
     sub_questions: List[SubQuestion] = Field(default_factory=list, description="List of sub-questions if is_complex is true. Empty list if false.")
 
-def decompose_query(user_question: str, oracle_filters: str = "None", session_id: str = "decomposer_default", trace_id: str = None, trace_name: str = "query_decomposition") -> Dict[str, Any]:
+# 🔥 Ajout du paramètre rag_examples avec une valeur par défaut sécurisée
+def decompose_query(user_question: str, oracle_filters: str = "None", session_id: str = "decomposer_default", trace_id: str = None, trace_name: str = "query_decomposition", rag_examples: str = "No relevant examples found.") -> Dict[str, Any]:
     
     schema_doc = load_schema_doc()
-    variables  = {"schema_doc": schema_doc, "implicit_filters": oracle_filters, "question": user_question}
+    
+    # 🔥 Injection dans les variables pour le template Langfuse
+    variables  = {
+        "schema_doc": schema_doc, 
+        "implicit_filters": oracle_filters, 
+        "question": user_question,
+        "rag_examples": rag_examples
+    }
+    
     response   = call_llm_with_tracking(prompt_name="iyp-decomposer", variables=variables, session_id=session_id, model_name="gemini-2.5-flash", trace_id=trace_id, trace_name=trace_name, tags=["decomposer"], pydantic_schema=QueryDecomposition )
     
     if response["success"]:
