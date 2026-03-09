@@ -5,15 +5,19 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
+# 1. Import de Langfuse v3
+from langfuse import Langfuse
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-# On pointe toujours sur le port 7688
+# 2. Initialisation du client Langfuse
+langfuse = Langfuse()
+
 RAG_URI      = os.getenv("RAG_URI", "bolt://localhost:7688")
 RAG_USER     = os.getenv("RAG_USER", "neo4j")
 RAG_PASSWORD = os.getenv("RAG_PASSWORD", "password")
 
-# Le même modèle d'embedding que pour l'ingestion
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
 def get_relevant_examples(search_intent: str, top_k: int = 3) -> List[Dict[str, Any]]:
@@ -23,7 +27,26 @@ def get_relevant_examples(search_intent: str, top_k: int = 3) -> List[Dict[str, 
     logger.info(f"🔍 Recherche RAG pour l'intention : '{search_intent[:50]}...'")
     
     try:
-        query_vector = embeddings.embed_query(search_intent)
+        # Traçage de l'Embedding
+        with langfuse.start_as_current_observation(
+            name="Gemini_Embedding",
+            as_type="generation",
+            model="gemini-embedding-001", 
+            input=search_intent
+        ) as emb_gen:
+            
+            query_vector = embeddings.embed_query(search_intent)
+            
+            estimated_tokens = len(search_intent) // 4
+            if estimated_tokens == 0: estimated_tokens = 1
+            
+            emb_gen.update(
+                output={"vector_dimension": len(query_vector)},
+                usage={
+                    "input": estimated_tokens
+                }
+            )
+            
     except Exception as e:
         logger.error(f"❌ Erreur lors de l'embedding de la requête RAG : {e}")
         return []
@@ -41,22 +64,30 @@ def get_relevant_examples(search_intent: str, top_k: int = 3) -> List[Dict[str, 
     
     results = []
     try:
-        with GraphDatabase.driver(RAG_URI, auth=(RAG_USER, RAG_PASSWORD)) as driver:
-            records, _, _ = driver.execute_query(
-                cypher_query,
-                query_vector=query_vector,
-                top_k=top_k,
-                database_="neo4j"
-            )
+        with langfuse.start_as_current_observation(
+            name="Neo4j_Vector_Search",
+            as_type="span",
+            input={"top_k": top_k}
+        ) as db_span:
             
-            for record in records:
-                results.append({
-                    "original_question": record["original_question"],
-                    "abstract_intent": record["abstract_intent"],
-                    "methodology": record["methodology"],
-                    "cypher": record["cypher"],
-                    "score": record["score"]
-                })
+            with GraphDatabase.driver(RAG_URI, auth=(RAG_USER, RAG_PASSWORD)) as driver:
+                records, _, _ = driver.execute_query(
+                    cypher_query,
+                    query_vector=query_vector,
+                    top_k=top_k,
+                    database_="neo4j"
+                )
+                
+                for record in records:
+                    results.append({
+                        "original_question": record["original_question"],
+                        "abstract_intent": record["abstract_intent"],
+                        "methodology": record["methodology"],
+                        "cypher": record["cypher"],
+                        "score": record["score"]
+                    })
+            
+            db_span.update(output={"retrieved_count": len(results)})
                 
         logger.info(f"✅ RAG : {len(results)} exemples récupérés.")
         return results
