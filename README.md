@@ -100,7 +100,9 @@ cypher_agent/
 │       └── docker-compose.yml   # Local Neo4j instance for RAG
 │
 ├── docs/
-│   └── IYP_doc.md               # Master schema reference (nodes, relationships, properties)
+│   ├── IYP_doc.md               # Master schema reference (nodes, relationships, properties)
+│   ├── few_shot_examples-variation-A.json      # synthetic augmented data for the RAG
+│   └── few_shot_examples-variation-A.json      # synthetic augmented data for the RAG
 │
 ├── utils/
 │   ├── helpers.py               # Formatting & file utilities
