@@ -131,7 +131,7 @@ def resolve_query_with_retries(target_question: str, context_data: dict, oracle_
     return {"status": "FAILED", "iterations": max_retries,"cypher": last_cypher, "data": last_data[:MAX_ROWS_FOR_CONTEXT] if last_data else [] }
 
 
-def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = None):
+def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = None, use_rag: bool = False):
     run_id = uuid.uuid4().hex
     if not session_id:  
         session_id = f"session_{uuid.uuid4().hex[:8]}"
@@ -142,17 +142,19 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
             oracle_res = get_query_expectations(question, session_id=session_id, trace_id=run_id)
             technical_intent = oracle_res.get("technical_translation", "")
 
-            logger.info("Récupération des exemples RAG en cours...")
+            if use_rag:logger.info("Récupération des exemples RAG en cours...")
             
-            # ✅ FIX: Use Langfuse v3 context manager instead of deprecated langfuse.trace().span()
-            with langfuse.start_as_current_observation(
-                name="Global_RAG_Retrieval",
-                as_type="span",
-                input={"search_intent": technical_intent}
-            ) as rag_span:
-                raw_examples = get_relevant_examples(technical_intent, top_k=3)
-                rag_context_text = format_rag_context(raw_examples)
-                rag_span.update(output={"retrieved_examples": raw_examples})
+            rag_context_text = ""
+            if use_rag:
+                logger.info("Récupération des exemples RAG en cours...")
+                with langfuse.start_as_current_observation(
+                    name="Global_RAG_Retrieval",
+                    as_type="span",
+                    input={"search_intent": technical_intent}
+                ) as rag_span:
+                    raw_examples = get_relevant_examples(technical_intent, top_k=3) if use_rag else []
+                    rag_context_text = format_rag_context(raw_examples)
+                    rag_span.update(output={"retrieved_examples": raw_examples})
             
         except Exception as e:
             logger.error(f"💥 CRASH PYTHON dans get_query_expectations ou RAG: {e}")
@@ -162,7 +164,6 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
             
         oracle_expectations = None
         implicit_filters    = "None"
-        
         if oracle_res.get("success"):
             oracle_expectations = {
                 "real_world_context": oracle_res.get("real_world_context"),
@@ -197,15 +198,14 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
                 intent = sq.get("intent")
                 print(f"\n>>> 🏃 Exécution de l'Étape {step_num}: {intent}")
                 
-                logger.info(f"🔍 Recherche RAG spécifique pour l'étape {step_num}...")
+                if use_rag :logger.info(f"🔍 Recherche RAG spécifique pour l'étape {step_num}...")
                 
-                # ✅ FIX: Use Langfuse v3 context manager for per-step RAG tracing
                 with langfuse.start_as_current_observation(
                     name=f"Step_{step_num}_RAG_Retrieval",
                     as_type="span",
                     input={"search_intent": intent}
                 ) as step_rag_span:
-                    step_raw_examples = get_relevant_examples(intent, top_k=2) 
+                    step_raw_examples = get_relevant_examples(intent, top_k=2) if use_rag else []
                     step_rag_context = format_rag_context(step_raw_examples)
                     step_rag_span.update(output={"retrieved_examples": step_raw_examples})
                 
@@ -264,6 +264,6 @@ def run_autonomous_loop(question: str, max_retries: int = 4, session_id: str = N
 
 
 if __name__ == "__main__":
-    q = "Find AS nodes that map to the same OpaqueID as the AS node with asn 15735 and get the Prefix nodes originated by these ASes with the Country nodes of the prefixes. If possible, get the Name node for the AS as specified by reference_org RIPE NCC. Return AS, Prefix, Name, Country, and OpaqueID nodes for prefixes not located in the Country with country_code 'MT"
-    result = run_autonomous_loop(q)
+    q = "Find the distinct Prefix's prefixes that depend on the AS with asn 109."
+    result = run_autonomous_loop(q,use_rag=False)
     print("\nFinal Result:", json.dumps(result, indent=2))

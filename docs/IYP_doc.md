@@ -76,6 +76,7 @@ An AS operates in multiple countries. To find its true Home/Registration Country
 ### IHR — Inter-Dependency & Resilience
 
 - **Pattern:** `(:AS)-[d:DEPENDS_ON]->(:AS)`
+- **Pattern:** `(:Prefix)-[d:DEPENDS_ON]->(:AS)`
 - ✅ **KEY:** `d.hege` *(Float, 0.0–1.0)*
 - **Meaning:** Hegemony score (dependency strength). High score = Risk of centralization.
 

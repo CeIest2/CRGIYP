@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import time
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
@@ -9,9 +10,9 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-RAG_URI      = os.getenv("RAG_URI", "bolt://localhost:7688")
-RAG_USER     = os.getenv("RAG_USER", "neo4j")
-RAG_PASSWORD = os.getenv("RAG_PASSWORD", "password")
+RAG_URI      = os.getenv("RAG_URI")
+RAG_USER     = os.getenv("RAG_USER")
+RAG_PASSWORD = os.getenv("RAG_PASSWORD")
 
 embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
@@ -20,8 +21,8 @@ def setup_rag():
     driver = GraphDatabase.driver(RAG_URI, auth=(RAG_USER, RAG_PASSWORD))
 
     json_paths = [
-        "docs/few_shot_examples.json",
-        os.path.join(os.path.dirname(__file__), "..", "..", "docs", "few_shot_examples.json")
+        "docs/few_shot_examples-variation-A.json",
+        os.path.join(os.path.dirname(__file__), "..", "..", "docs", "few_shot_examples-variation-A.json")
     ]
     
     examples = None
@@ -38,17 +39,14 @@ def setup_rag():
         return
 
     with driver.session() as session:
-        # 1. Nettoyage complet
         session.run("MATCH (n:CypherExample) DETACH DELETE n")
         session.run("DROP INDEX example_intent_embedding IF EXISTS")
         
-        # 2. DÉTECTION DYNAMIQUE DES DIMENSIONS
         logger.info("📏 Détection de la dimension du modèle d'embedding...")
         sample_vector = embeddings.embed_query("test dimension")
         vector_dim = len(sample_vector)
         logger.info(f"✅ Le modèle génère des vecteurs de {vector_dim} dimensions.")
         
-        # 3. Création de l'index avec la dimension détectée dynamiquement
         logger.info("🏗️ Création de l'index vectoriel sur mesure...")
         session.run(f"""
             CREATE VECTOR INDEX example_intent_embedding IF NOT EXISTS
@@ -61,6 +59,7 @@ def setup_rag():
 
         logger.info(f"🧠 Génération des embeddings pour {len(examples)} exemples...")
         for ex in examples:
+            time.sleep(0.5)
             intent = ex.get("intent", "")
             abstract_intent = ex.get("abstract_intent", "")
             methodology = ex.get("methodology", "")

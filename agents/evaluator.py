@@ -26,7 +26,7 @@ def evaluate_cypher_result(question: str, cypher: str, explanation: str, db_outp
     variables = {"question": question,  "cypher": cypher,  "explanation": explanation,  "db_output": format_db_output(db_output),  "schema_doc": schema_doc, "oracle_expectations": json.dumps(oracle_expectations, indent=2, ensure_ascii=False) if oracle_expectations else "Aucune consigne de l'Oracle n'a été fournie."}
     
     logger.info(f"🔎 Evaluating query for question: '{question[:50]}...'")
-    response = call_llm_with_tracking(prompt_name="iyp-query-evaluator", variables=variables, session_id=session_id, trace_id=trace_id, trace_name=trace_name, tags=["evaluator"], pydantic_schema=QueryEvaluation )
+    response = call_llm_with_tracking(prompt_name="iyp-query-evaluator", variables=variables, session_id=session_id,model_name="gemini-2.5-flash-lite", trace_id=trace_id, trace_name=trace_name, tags=["evaluator"], pydantic_schema=QueryEvaluation )
 
     if not response["success"]:
         return {"is_valid": False, "error_type": "SYSTEM", "analysis": f"LLM error: {response['error_message']}"}

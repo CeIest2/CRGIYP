@@ -52,9 +52,8 @@ class BenchmarkReport(BaseModel):
     stats_current_run: Dict[str, Any] = {"global": GlobalStats(), "by_difficulty": {}}
     details: List[TestDetail] = []
 
-# --- Fonctions de traitement ---
 
-def process_single_test(index: int, row: Dict[str, str], report: BenchmarkReport, report_filename: str):
+def process_single_test(index: int, row: Dict[str, str], report: BenchmarkReport, report_filename: str,use_rag: bool = False):
     """Exécute un test unique et met à jour le rapport partagé."""
     task_id          = row.get('Task ID', 'N/A')
     difficulty       = row.get('Difficulty Level', 'Unknown')
@@ -67,8 +66,7 @@ def process_single_test(index: int, row: Dict[str, str], report: BenchmarkReport
     failure_reason = None
     
     try:
-        # Appel de l'orchestrateur (l'agent autonome)
-        agent_result = run_autonomous_loop(prompt, session_id=report.session_id)
+        agent_result = run_autonomous_loop(prompt, session_id=report.session_id, use_rag=use_rag)
         status       = agent_result.get("status", "FAILED")
         iterations   = agent_result.get("iterations", 0)
         final_cypher = agent_result.get("cypher", "None")
@@ -84,7 +82,6 @@ def process_single_test(index: int, row: Dict[str, str], report: BenchmarkReport
         
     elapsed_time = round(time.time() - start_time, 2)
     
-    # Création de l'objet de détail du test
     detail = TestDetail(
         test_index=index + 1,
         task_id=task_id,
@@ -98,13 +95,10 @@ def process_single_test(index: int, row: Dict[str, str], report: BenchmarkReport
         canonical_cypher=canonical_cypher
     )
 
-    # Mise à jour sécurisée des statistiques et sauvegarde
     with file_lock:
-        # Initialisation de la difficulté si nouvelle
         if difficulty not in report.stats_current_run["by_difficulty"]:
             report.stats_current_run["by_difficulty"][difficulty] = DifficultyStats()
 
-        # Incrémentation des compteurs
         report.stats_current_run["global"].total += 1
         report.stats_current_run["by_difficulty"][difficulty].total += 1
         
@@ -117,11 +111,9 @@ def process_single_test(index: int, row: Dict[str, str], report: BenchmarkReport
             report.stats_current_run["by_difficulty"][difficulty].failed += 1
             logger.warning(f"❌ [Test {index + 1}] FAILED ({elapsed_time}s) -> Reason: {failure_reason}")
         
-        # Ajout au log détaillé
         report.details.append(detail)
         report.last_updated = datetime.now().isoformat()
         
-        # Sauvegarde incrémentale
         with open(report_filename, "w", encoding="utf-8") as f:
             f.write(report.model_dump_json(indent=4))
         
@@ -131,7 +123,7 @@ def process_single_test(index: int, row: Dict[str, str], report: BenchmarkReport
         logger.info(f"📈 CURRENT SCORE: {g.success}/{g.total} ({rate:.2f}%)")
 
 
-def run_cyphereval_benchmark(csv_file_path: str, limit: int = None, start_at: int = 0, max_workers: int = 5):
+def run_cyphereval_benchmark(csv_file_path: str, limit: int = None, start_at: int = 0, max_workers: int = 5, use_rag: bool = False):
     """Point d'entrée principal pour lancer le benchmark en parallèle."""
     
     date_str = datetime.now().strftime("%Y%m%d_%H%M")
@@ -159,10 +151,9 @@ def run_cyphereval_benchmark(csv_file_path: str, limit: int = None, start_at: in
         logger.error(f"CSV file not found: {csv_file_path}")
         return
 
-    # Exécution parallèle
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [
-            executor.submit(process_single_test, index, row, report, report_filename)
+            executor.submit(process_single_test, index, row, report, report_filename, use_rag=use_rag)
             for index, row in tasks_to_run
         ]
         concurrent.futures.wait(futures)
@@ -184,7 +175,6 @@ def run_cyphereval_benchmark(csv_file_path: str, limit: int = None, start_at: in
     else:
         print("No tests were executed.")
 
-    # Sauvegarde finale du fichier consolidé
     final_output = "benchmark_report_final.json"
     with open(final_output, "w", encoding="utf-8") as f:
         f.write(report.model_dump_json(indent=4))
@@ -192,4 +182,4 @@ def run_cyphereval_benchmark(csv_file_path: str, limit: int = None, start_at: in
     logger.info(f"📝 Final report saved in '{final_output}'")
 
 if __name__ == "__main__":
-    run_cyphereval_benchmark("variation-B.csv", limit=None, start_at=0, max_workers=15)
+    run_cyphereval_benchmark("variation-B.csv", limit=None, start_at=0, max_workers=12, use_rag=True)

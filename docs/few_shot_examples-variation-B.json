@@ -1,0 +1,998 @@
+[
+  {
+    "intent": "Find the distinct IXPs' names of which the AS with asn 8075 is member of.",
+    "abstract_intent": "Find the names of the Internet Exchange Points (IXPs) that a specific Autonomous System (AS) is a member of.",
+    "methodology": "First, the query locates the specific `:AS` node using its `asn` property, 8075. From this starting node, it traverses the outgoing `[:MEMBER_OF]` relationship to identify all connected `:IXP` nodes. Finally, the query returns the unique `name` property from each of the discovered `:IXP` nodes.",
+    "cypher": "MATCH (:AS {asn: 8075})-[:MEMBER_OF]->(ixp:IXP) RETURN DISTINCT ixp.name"
+  },
+  {
+    "intent": "Give me the names of the IXPs where AS8075 is a member.",
+    "abstract_intent": "Find the names of all Internet Exchange Points (IXPs) where a specific Autonomous System (AS) is a member.",
+    "methodology": "First, the query locates the `:AS` node for the specified autonomous system number, 8075. It then traverses the outgoing `[:MEMBER_OF]` relationship to find all connected `:IXP` (Internet Exchange Point) nodes. Finally, the query returns the unique `.name` property from each of these discovered IXPs.",
+    "cypher": "MATCH (:AS {asn: 8075})-[:MEMBER_OF]->(ixp:IXP) RETURN DISTINCT ixp.name"
+  },
+  {
+    "intent": "Find the percentage of the population for the Country with country_code 'US' hosted by the AS with asn 8075.",
+    "abstract_intent": "Find the population percentage hosted by a specific AS in a given country.",
+    "methodology": "The query first identifies the specific `:AS` node with `asn: 8075` and the `:Country` node with `country_code: 'US'`. It then traverses the `:POPULATION` relationship connecting these two nodes. Finally, the query returns the value of the `percent` property from this relationship, which represents the market share.",
+    "cypher": "MATCH (:AS {asn:8075})-[p:POPULATION]-(:Country {country_code:'US'}) RETURN p.percent"
+  },
+  {
+    "intent": "Find the percentage of United States' population covered by AS8075.",
+    "abstract_intent": "Find the population coverage percentage for a specific AS in a given country.",
+    "methodology": "The query first locates the `:AS` node for the specified autonomous system number, 8075. It then traverses the `:POPULATION` relationship to find a connected `:Country` node, which is filtered to be the United States via its `country_code`. Finally, the query returns the `percent` property from the `:POPULATION` relationship itself, which represents the population coverage.",
+    "cypher": "MATCH (:AS {asn:8075})-[p:POPULATION]-(:Country {country_code:'US'}) RETURN p.percent"
+  },
+  {
+    "intent": "Find rank numbers and the corresponding rank names for the AS with asn 8075 in the Country with country_code 'US'.",
+    "abstract_intent": "Find all country-specific rankings, including rank number and rank name, for a given Autonomous System in a specific country.",
+    "methodology": "First, the query locates the specific `:AS` node for ASN 8075. It then traverses any outgoing `:RANK` relationships to find connected `:Ranking` nodes. Finally, it filters these results to include only those `:Ranking` nodes that are also connected to the `:Country` node for the 'US'.",
+    "cypher": "MATCH (:AS  {asn:8075})-[r1:RANK]-(r2:Ranking)--(:Country {country_code:'US'}) RETURN r1.rank, r2.name"
+  },
+  {
+    "intent": "Find ranks and the corresponding rank names of AS8075 in the United States.",
+    "abstract_intent": "Find the ranks and corresponding ranking names for a specific AS within a given country.",
+    "methodology": "First, the query locates the `:AS` node for the specified autonomous system number. It then traverses the `:RANK` relationship to find all associated `:Ranking` nodes. Finally, it filters these rankings to only include those that are connected to the specified `:Country` node, returning the rank value and the name of the ranking.",
+    "cypher": "MATCH (:AS {asn:8075})-[r1:RANK]-(r2:Ranking)--(:Country {country_code:'US'}) RETURN r1.rank, r2.name"
+  },
+  {
+    "intent": "Find all the AS nodes that have a peer to peer relationship with the AS with asn 8075.",
+    "abstract_intent": "Find all Autonomous Systems that have a peer-to-peer relationship with a specific Autonomous System.",
+    "methodology": "First, the query locates the starting `:AS` node using its ASN, 8075. It then traverses the undirected `:PEERS_WITH` relationship to find connected nodes. Finally, it filters these relationships to only include those with a `rel` property of 0 (peer-to-peer) and returns the neighboring `:AS` nodes.",
+    "cypher": "MATCH (:AS {asn:8075})-[:PEERS_WITH {rel: 0}]-(a:AS) RETURN a"
+  },
+  {
+    "intent": "Find the ASes that are peering with AS8075.",
+    "abstract_intent": "Find the Autonomous Systems that are peering with a specific AS.",
+    "methodology": "First, the query locates the starting `:AS` node identified by its ASN, 8075. It then traverses all `[:PEERS_WITH]` relationships connected to this node. The query concludes by returning the `:AS` nodes at the other end of these relationships, which represent the direct peers.",
+    "cypher": "MATCH (:AS {asn:8075})-[:PEERS_WITH]-(a:AS) RETURN a"
+  },
+  {
+    "intent": "Find the distinct names of the AS with asn 8075.",
+    "abstract_intent": "Find all distinct names associated with a specific Autonomous System Number (ASN).",
+    "methodology": "First, the query locates the specific `:AS` node identified by its `asn` property. It then traverses the undirected `[:NAME]` relationship to find all connected `:Name` nodes. Finally, it returns the distinct `name` property from each of these `:Name` nodes.",
+    "cypher": "MATCH (:AS {asn:8075})-[:NAME]-(n:Name) RETURN DISTINCT n.name"
+  },
+  {
+    "intent": "Give me the names of AS8075.",
+    "abstract_intent": "Find all names associated with a specific Autonomous System Number (ASN).",
+    "methodology": "The query first locates the `:AS` node where the `asn` property is 8075. It then traverses the undirected `:NAME` relationship to find all connected `:Name` nodes. Finally, it returns the unique `name` property from each of these `:Name` nodes.",
+    "cypher": "MATCH (:AS {asn:8075})-[:NAME]-(n:Name) RETURN DISTINCT n.name"
+  },
+  {
+    "intent": "Find all distinct tag labels of the AS with asn 8075.",
+    "abstract_intent": "Find all distinct tag labels associated with a specific Autonomous System (AS).",
+    "methodology": "First, the query locates the specific `:AS` node using its property `asn: 8075`. It then traverses the `[:CATEGORIZED]` relationship to find all connected `:Tag` nodes. Finally, it returns the distinct `label` property from each of these tags.",
+    "cypher": "MATCH (:AS {asn:8075})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "Find the tags of AS8075.",
+    "abstract_intent": "Find all tags associated with a specific Autonomous System (AS) identified by its ASN.",
+    "methodology": "The query first locates the specific `:AS` node using its `asn` property. It then traverses the `:CATEGORIZED` relationship to find all connected `:Tag` nodes. Finally, the query returns the unique `label` property from each of these tags.",
+    "cypher": "MATCH (:AS {asn:8075})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "Find all distinct tag labels of the Prefix with prefix 206.191.224.0/19.",
+    "abstract_intent": "Find all distinct tag labels for a given Prefix.",
+    "methodology": "First, the query locates the specific `:Prefix` node using its `prefix` property. Then, it traverses the `:CATEGORIZED` relationship to find all connected `:Tag` nodes. Finally, it returns the distinct `label` property from each of these `:Tag` nodes.",
+    "cypher": "MATCH (:Prefix {prefix: '206.191.224.0/19'})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "Find the tags of 206.191.224.0/19.",
+    "abstract_intent": "Find all tags associated with a given IP prefix.",
+    "methodology": "First, I locate the specific `:Prefix` node using its `prefix` property. Then, I traverse the `:CATEGORIZED]` relationship to find all connected `:Tag` nodes. Finally, I return the unique `label` property from each of these tags.",
+    "cypher": "MATCH (:Prefix {prefix: '206.191.224.0/19'})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "Find the rank number for the AS with asn 8075 in the Ranking with name 'CAIDA ASRank'.",
+    "abstract_intent": "Find the rank for a specific AS number within a named ranking.",
+    "methodology": "The query initiates by locating the specific `:AS` node identified by its `asn` property. From this node, it traverses the `:RANK` relationship to find a connected `:Ranking` node that has a `name` property of 'CAIDA ASRank'. The final step is to return the `rank` property stored on the `:RANK` relationship itself.",
+    "cypher": "MATCH (:AS  {asn:8075})-[r:RANK]-(:Ranking {name:'CAIDA ASRank'}) RETURN r.rank"
+  },
+  {
+    "intent": "Find the CAIDA AS rank for AS8075.",
+    "abstract_intent": "Find a specific type of rank for a given Autonomous System.",
+    "methodology": "First, the query identifies the specific `:AS` node using its autonomous system number, 8075. It then traverses the connecting `:RANK` relationship to find a `:Ranking` node. The query specifically filters for the `:Ranking` node with the name 'CAIDA ASRank' and returns the `rank` property from the relationship.",
+    "cypher": "MATCH (:AS {asn:8075})-[r:RANK]-(:Ranking {name:'CAIDA ASRank'}) RETURN r.rank"
+  },
+  {
+    "intent": "Find the rank number for the DomainName with name 'iij.ad.jp' in the Ranking with name 'Cisco Umbrella Top 1 million'.",
+    "abstract_intent": "Find the rank number for a specific DomainName within a specific Ranking.",
+    "methodology": "First, the query identifies the `:DomainName` node with the property `name` equal to 'iij.ad.jp'. It then traverses the connecting `:RANK` relationship to find the adjacent `:Ranking` node, which is filtered to have the `name` 'Cisco Umbrella Top 1 million'. Finally, the query returns the value of the `rank` property from that specific `:RANK` relationship.",
+    "cypher": "MATCH (:DomainName {name: 'iij.ad.jp'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+  },
+  {
+    "intent": "Find the rank for 'iij.ad.jp' in the 'Cisco Umbrella Top 1 million' list.",
+    "abstract_intent": "Find the rank of a specific domain name within a specific ranking list.",
+    "methodology": "First, the query locates the `:DomainName` node with the name 'iij.ad.jp'. It then traverses the `:RANK` relationship to find a connected `:Ranking` node. The query specifically filters for the `:Ranking` node named 'Cisco Umbrella Top 1 million' and returns the `rank` property from the connecting relationship.",
+    "cypher": "MATCH (:DomainName {name: 'iij.ad.jp'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+  },
+  {
+    "intent": "Find the rank number for the HostName with name 'www.cisco.com' in the Ranking with name 'Cisco Umbrella Top 1 million'.",
+    "abstract_intent": "Find the rank of a specific HostName within a specific Ranking.",
+    "methodology": "First, the query locates the `:HostName` node with the name 'www.cisco.com'. It then traverses the `:RANK` relationship to find a connected `:Ranking` node specifically named 'Cisco Umbrella Top 1 million'. The query concludes by returning the `rank` property from this `:RANK` relationship.",
+    "cypher": "MATCH (:HostName {name: 'www.cisco.com'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+  },
+  {
+    "intent": "Find the rank for 'www.cisco.com' in the 'Cisco Umbrella Top 1 million' list.",
+    "abstract_intent": "Find the rank of a specific HostName within a given Ranking list.",
+    "methodology": "First, the query locates the `:HostName` node with the name 'www.cisco.com'. It then traverses the `:RANK` relationship to find the connected `:Ranking` node specifically named 'Cisco Umbrella Top 1 million'. Finally, it returns the `rank` property stored on that `:RANK` relationship.",
+    "cypher": "MATCH (:HostName {name: 'www.cisco.com'})-[r:RANK]-(:Ranking {name:'Cisco Umbrella Top 1 million'}) RETURN r.rank"
+  },
+  {
+    "intent": "Find all distinct tag labels of the URL with url 'https://www.aliexpress.com/'.",
+    "abstract_intent": "Find all distinct tag labels for a given URL.",
+    "methodology": "First, the query locates the specific `:URL` node using its `url` property. From this starting node, it traverses the outgoing `[:CATEGORIZED]` relationship to find all connected `:Tag` nodes. Finally, it returns the distinct `label` property from each of these tags.",
+    "cypher": "MATCH (:URL {url: 'https://www.aliexpress.com/'})-[:CATEGORIZED]->(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "Find the tags of 'https://www.aliexpress.com/'.",
+    "abstract_intent": "Find the tags associated with a specific URL.",
+    "methodology": "First, the query locates the starting node by matching a `:URL` with the specified `url` property. It then traverses the outgoing `:CATEGORIZED` relationship to find all connected `:Tag` nodes. Finally, it returns the unique `label` property from each of these `:Tag` nodes.",
+    "cypher": "MATCH (:URL {url: 'https://www.aliexpress.com/'})-[:CATEGORIZED]->(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "Find the value of QUERIED_FROM for the DomainName with name 'microsoft.com' in the Country with country_code 'JP'.",
+    "abstract_intent": "Find the query share value for a given DomainName from a specific Country.",
+    "methodology": "The query first locates the `:DomainName` node for 'microsoft.com' and the `:Country` node for 'JP'. It then finds the `:QUERIED_FROM` relationship connecting the domain to the country. Finally, it returns the `value` property from this relationship, which represents the share of DNS queries.",
+    "cypher": "MATCH (:DomainName {name: 'microsoft.com'})-[q:QUERIED_FROM]->(:Country {country_code: 'JP'}) RETURN q.value"
+  },
+  {
+    "intent": "How many times was 'microsoft.com' queried from Japan?",
+    "abstract_intent": "Find the query share for a specific domain name from a specific country.",
+    "methodology": "The query starts by finding the `:DomainName` node for 'microsoft.com'. It then follows the `:QUERIED_FROM` relationship to a `:Country` node. The query specifically targets the `:Country` with the `country_code` 'JP' and returns the `value` property from the relationship, which represents the share of DNS queries from that country.",
+    "cypher": "MATCH (:DomainName {name: 'microsoft.com'})-[q:QUERIED_FROM]->(:Country {country_code: 'JP'}) RETURN q.value"
+  },
+  {
+    "intent": "Find the value of QUERIED_FROM for the DomainName with name 'microsoft.com' from the AS with asn 577.",
+    "abstract_intent": "Find the value of the QUERIED_FROM relationship between a specific Domain Name and a specific AS.",
+    "methodology": "The query first identifies the specific `:DomainName` node for 'microsoft.com' and the specific `:AS` node for ASN 577. It then traverses the directed `:QUERIED_FROM` relationship from the domain to the AS. Finally, it returns the `value` property stored on that relationship.",
+    "cypher": "MATCH (:DomainName {name: 'microsoft.com'})-[q:QUERIED_FROM]->(a:AS {asn: 577}) RETURN q.value"
+  },
+  {
+    "intent": "How many times was 'microsoft.com' queried from AS577?",
+    "abstract_intent": "Find the query metric for a specific domain name originating from a specific Autonomous System.",
+    "methodology": "The query first locates the `:DomainName` node for 'microsoft.com'. It then traverses the outgoing `:QUERIED_FROM` relationship to find a connected `:AS` node identified by ASN 577. Finally, it returns the `value` property from this relationship, which represents the query metric.",
+    "cypher": "MATCH (:DomainName {name: 'microsoft.com'})-[q:QUERIED_FROM]->(a:AS {asn: 577}) RETURN q.value"
+  },
+  {
+    "intent": "Find the distinct AS' asn of the ASes with name 'Microsoft'.",
+    "abstract_intent": "Find the unique Autonomous System Numbers (ASNs) for all ASes that are associated with a specific name.",
+    "methodology": "First, the query identifies the `:Name` node where the `name` property is 'Microsoft'. It then traverses the undirected `[:NAME]` relationship to find all connected `:AS` nodes. Finally, it extracts and returns the distinct `asn` property from these matched Autonomous Systems.",
+    "cypher": "MATCH (a:AS)-[:NAME]-(:Name {name: 'Microsoft'}) RETURN DISTINCT a.asn"
+  },
+  {
+    "intent": "Find Microsoft's AS numbers.",
+    "abstract_intent": "Find the AS numbers associated with a specific organization name.",
+    "methodology": "First, locate the `:Name` node with the property `name` equal to 'Microsoft'. Then, traverse the connecting `[:NAME]` relationship to find all associated `:AS` nodes. Finally, return the distinct `.asn` property from each of the identified `:AS` nodes.",
+    "cypher": "MATCH (a:AS)-[:NAME]-(:Name {name: 'Microsoft'}) RETURN DISTINCT a.asn"
+  },
+  {
+    "intent": "Find the distinct AuthoritativeNameServer's names that manage the DomainName with name 'com'.",
+    "abstract_intent": "Find the names of the authoritative nameservers for a specific domain name.",
+    "methodology": "First, the query locates the `:DomainName` node with the property `name` set to 'com'. It then traverses the outgoing `:MANAGED_BY` relationship to find all connected `:AuthoritativeNameServer` nodes. Finally, it returns the distinct `name` property for each of these authoritative nameservers.",
+    "cypher": "MATCH (:DomainName {name: 'com'})-[:MANAGED_BY]->(a:AuthoritativeNameServer) RETURN DISTINCT a.name"
+  },
+  {
+    "intent": "Who manages the 'com' domain?",
+    "abstract_intent": "Identify the authoritative name servers responsible for managing a specific domain name.",
+    "methodology": "The query first locates the `:DomainName` node with the `name` property 'com'. It then traverses the outgoing `:MANAGED_BY` relationship to find all connected `:AuthoritativeNameServer` nodes. Finally, the query returns the unique names of these servers.",
+    "cypher": "MATCH (:DomainName {name: 'com'})-[:MANAGED_BY]->(a:AuthoritativeNameServer) RETURN DISTINCT a.name"
+  },
+  {
+    "intent": "Find the distinct AuthoritativeNameServer's names that manage the IP with ip 72.163.5.201.",
+    "abstract_intent": "Find the distinct authoritative name servers that manage domains resolving to a specific IP address.",
+    "methodology": "The query starts by finding the specific `:IP` node. It then traverses backwards along the `:RESOLVES_TO` relationship to find the `:HostName`, then backwards along `:PART_OF` to find the parent `:DomainName`. Finally, it traverses backwards along the `:MANAGED_BY` relationship to identify the `:AuthoritativeNameServer` nodes and returns their distinct names.",
+    "cypher": "MATCH (a:AuthoritativeNameServer)<-[:MANAGED_BY]-(:DomainName)<-[:PART_OF]-(:HostName)-[:RESOLVES_TO]->(:IP {ip: '72.163.5.201'}) RETURN DISTINCT a.name"
+  },
+  {
+    "intent": "Who manages DNS for the IP address 72.163.5.201?",
+    "abstract_intent": "Find the authoritative name servers associated with a specific IP address.",
+    "methodology": "First, the query locates the specified `:IP` node. It then traverses backwards through the DNS resolution path, following the `:RESOLVES_TO` relationship to a `:HostName`, and then the `:PART_OF` relationship to a `:DomainName`. Finally, it identifies the DNS provider by following the `:MANAGED_BY` relationship to an `:AuthoritativeNameServer` node and returns its name.",
+    "cypher": "MATCH (a:AuthoritativeNameServer)<-[:MANAGED_BY]-(:DomainName)<-[:PART_OF]-(:HostName)-[:RESOLVES_TO]->(:IP {ip: '72.163.5.201'}) RETURN DISTINCT a.name"
+  },
+  {
+    "intent": "Find the hege values of the AS with asn 109 that depends on the AS with asn 3356.",
+    "abstract_intent": "Find the hegemony (hege) value for the dependency relationship from a specific source AS to a specific target AS.",
+    "methodology": "The query first locates the source `:AS` node with the property `asn: 109`. It then traverses the directed `[:DEPENDS_ON]` relationship to the target `:AS` node with the property `asn: 3356`. Finally, it returns the `hege` property stored on that specific relationship.",
+    "cypher": "MATCH (:AS {asn: 109})-[d:DEPENDS_ON]->(:AS {asn: 3356}) RETURN d.hege"
+  },
+  {
+    "intent": "Find the AS hegemony value from AS109 to AS3356.",
+    "abstract_intent": "Find the hegemony value from a specific source AS to a specific target AS.",
+    "methodology": "The query first identifies a source `:AS` node with ASN 109 and a target `:AS` node with ASN 3356. It then finds the directed `:DEPENDS_ON` relationship connecting the source to the target. Finally, it returns the value of the `hege` property from that relationship, which represents the dependency score.",
+    "cypher": "MATCH (:AS {asn: 109})-[d:DEPENDS_ON]->(:AS {asn: 3356}) RETURN d.hege"
+  },
+  {
+    "intent": "Find the AS' asn on which United States (Country with country_code 'US') depends the most according to the Ranking with name 'IHR country ranking: Total AS (US)'.",
+    "abstract_intent": "Find the ASN of the Autonomous System on which a specific country depends the most, according to a given country-specific ranking.",
+    "methodology": "The query first identifies the specific `:Ranking` node for the US IHR ranking, ensuring it's linked to the `:Country` with code 'US'. From this ranking, it traverses backwards along the `:RANK` relationship to find all associated `:AS` nodes. Finally, it sorts these ASes in descending order by the `hege` property on the ranking relationship and returns the `.asn` of the top result, representing the highest dependency.",
+    "cypher": "MATCH (a:AS)-[r:RANK]->(:Ranking {name: 'IHR country ranking: Total AS (US)'})-[:COUNTRY]->(:Country {country_code: 'US'}) RETURN a.asn ORDER BY r.hege DESC LIMIT 1"
+  },
+  {
+    "intent": "On which AS does the United States depend on the most?",
+    "abstract_intent": "Find the Autonomous System on which a specific country has the highest dependency.",
+    "methodology": "First, the query identifies the specific `:Ranking` node for the United States. It then traverses backwards along the `:RANK` relationship to find all associated `:AS` nodes. The results are then sorted in descending order based on the `hege` dependency score on the `:RANK` relationship to find and return the single most depended-on AS.",
+    "cypher": "MATCH (a:AS)-[r:RANK]->(:Ranking {name: 'IHR country ranking: Total AS (US)'})-[:COUNTRY]->(:Country {country_code: 'US'}) RETURN a.asn ORDER BY r.hege DESC LIMIT 1"
+  },
+  {
+    "intent": "Find the Prefix's prefixes that originate from the AS with asn 109.",
+    "abstract_intent": "Find all IP prefixes that are originated by a specific Autonomous System, identified by its ASN.",
+    "methodology": "The query first identifies the `:AS` node with the property `{asn: 109}`. It then traverses the incoming `:ORIGINATE` relationship to find all connected `:Prefix` nodes. Finally, the query returns the `prefix` property from each of these discovered `:Prefix` nodes.",
+    "cypher": "MATCH (p:Prefix)<-[:ORIGINATE]-(:AS {asn: 109}) RETURN p.prefix"
+  },
+  {
+    "intent": "Find the originated prefixes of AS109.",
+    "abstract_intent": "Find all originated prefixes for a given Autonomous System Number (ASN).",
+    "methodology": "The query first locates the specific `:AS` node identified by its Autonomous System Number, `asn: 109`. It then traverses the undirected `[:ORIGINATE]` relationship to find all connected `:Prefix` nodes. Finally, the query returns the `prefix` property from each of these discovered nodes.",
+    "cypher": "MATCH (p:Prefix)<-[:ORIGINATE]-(:AS {asn: 109}) RETURN p.prefix"
+  },
+  {
+    "intent": "Find the distinct Prefix's prefixes that depend on the AS with asn 109.",
+    "abstract_intent": "Find all distinct prefixes that depend on a specific Autonomous System (AS).",
+    "methodology": "The query first identifies the specific `:AS` node using its `asn` property. It then traverses incoming `:DEPENDS_ON` relationships to find all connected `:Prefix` nodes. Finally, it collects and returns the unique `prefix` property from each of these identified prefixes.",
+    "cypher": "MATCH (p:Prefix)-[:DEPENDS_ON]->(:AS {asn: 109}) RETURN DISTINCT p.prefix"
+  },
+  {
+    "intent": "Find the prefixes depending on AS109.",
+    "abstract_intent": "Find all IP prefixes that depend on a specific Autonomous System (AS).",
+    "methodology": "The query first locates the `:AS` node for the specified ASN. It then traverses all incoming `:DEPENDS_ON` relationships to find any `:Prefix` nodes that point to it. Finally, the query returns the unique `prefix` property from each of these dependent prefixes.",
+    "cypher": "MATCH (p:Prefix)-[:DEPENDS_ON]->(:AS {asn: 109}) RETURN DISTINCT p.prefix"
+  },
+  {
+    "intent": "Find the distinct Prefix's prefixes that are categorized with the Tag with label 'Anycast'.",
+    "abstract_intent": "Find all prefixes categorized with a specific tag label.",
+    "methodology": "The query first identifies all nodes with the `:Prefix` label. It then traverses the `[:CATEGORIZED]` relationship to find connected `:Tag` nodes. Finally, it filters these tags to only include those with the `label` property set to 'Anycast' and returns the unique `prefix` property from the matching `:Prefix` nodes.",
+    "cypher": "MATCH (p:Prefix)-[:CATEGORIZED]->(:Tag {label: 'Anycast'}) RETURN DISTINCT p.prefix"
+  },
+  {
+    "intent": "Give me anycast prefixes.",
+    "abstract_intent": "Find all prefixes that have a specific tag.",
+    "methodology": "First, the query identifies all nodes with the `:Prefix` label. It then traverses the outgoing `[:CATEGORIZED]` relationship to find connected `:Tag` nodes. Finally, it filters these tags to keep only those where the `label` property is 'Anycast' and returns the unique prefix strings.",
+    "cypher": "MATCH (p:Prefix)-[:CATEGORIZED]->(:Tag {label: 'Anycast'}) RETURN DISTINCT p.prefix"
+  },
+  {
+    "intent": "Find the distinct Prefix's prefixes from Country with country_code 'US'.",
+    "abstract_intent": "Find all distinct IP prefixes located in a specific country.",
+    "methodology": "The query first identifies all nodes with the `:Prefix` label. It then traverses the directed `[:COUNTRY]` relationship to find `:Country` nodes. Finally, it filters for the `:Country` node with the `country_code` property set to 'US' and returns the unique `prefix` property from the matched prefixes.",
+    "cypher": "MATCH (p:Prefix)-[:COUNTRY]->(:Country {country_code: 'US'}) RETURN DISTINCT p.prefix"
+  },
+  {
+    "intent": "Find prefixes locaed in the United States.",
+    "abstract_intent": "Find all prefixes located in a specific country.",
+    "methodology": "The query first identifies all nodes with the `:Prefix` label. It then traverses the directed `:COUNTRY` relationship to find the associated `:Country` node. Finally, it filters for `:Country` nodes where the `country_code` property matches the specified country and returns the unique prefix strings.",
+    "cypher": "MATCH (p:Prefix)-[:COUNTRY]->(:Country {country_code: 'US'}) RETURN DISTINCT p.prefix"
+  },
+  {
+    "intent": "From AS with asn 109 find all the AS siblings and return their asn.",
+    "abstract_intent": "For a given Autonomous System Number (ASN), find the ASNs of all its sibling Autonomous Systems.",
+    "methodology": "First, the query locates the starting `:AS` node using its unique identifier, `asn: 109`. It then traverses the undirected `:SIBLING_OF` relationship to find all directly connected nodes. Finally, it filters these connected nodes to ensure they are also `:AS` nodes and returns their respective `asn` properties.",
+    "cypher": "MATCH (:AS {asn: 109})-[:SIBLING_OF]-(a:AS) RETURN a.asn"
+  },
+  {
+    "intent": "Find siblings of AS109.",
+    "abstract_intent": "Find the siblings of a given Autonomous System (AS).",
+    "methodology": "First, the query locates the starting `:AS` node identified by its ASN, 109. It then traverses any undirected `:SIBLING_OF` relationships connected to this node. Finally, it identifies the `:AS` nodes at the other end of these relationships and returns their AS numbers.",
+    "cypher": "MATCH (:AS {asn: 109})-[:SIBLING_OF]-(a:AS) RETURN a.asn"
+  },
+  {
+    "intent": "Find the distinct IP's ips which HostName with name 'microsoft.com' resolves to.",
+    "abstract_intent": "Find the distinct IP addresses to which a given HostName resolves.",
+    "methodology": "The query first locates the `:HostName` node with the specific name 'microsoft.com'. From this starting point, it traverses the outgoing `[:RESOLVES_TO]` relationship to identify all connected `:IP` nodes. Finally, it collects the `ip` property from each of these destination nodes and returns a distinct list of these IP addresses.",
+    "cypher": "MATCH (:HostName {name: 'microsoft.com'})-[:RESOLVES_TO]->(i:IP) RETURN DISTINCT i.ip"
+  },
+  {
+    "intent": "Which IPs does 'microsoft.com' resolve to?",
+    "abstract_intent": "Find all IP addresses that a given hostname resolves to.",
+    "methodology": "The query first finds the `:HostName` node with the name 'microsoft.com'. It then traverses the outgoing `:RESOLVES_TO` relationship to find all connected `:IP` nodes. Finally, it returns the unique `ip` property from each of these IP nodes.",
+    "cypher": "MATCH (:HostName {name: 'microsoft.com'})-[:RESOLVES_TO]->(i:IP) RETURN DISTINCT i.ip"
+  },
+  {
+    "intent": "Find the AS' asn which is the target of AtlasMeasurement with id 6907267 which the AtlasProbe with id 1004379 is part of.",
+    "abstract_intent": "Find the target AS number for a specific Atlas Measurement that a specific Atlas Probe participated in.",
+    "methodology": "The query first locates the `:AtlasProbe` node by its ID. It then traverses the `:PART_OF` relationship to find the specified `:AtlasMeasurement`. Finally, it follows the `:TARGET` relationship from the measurement to identify the target `:AS` node and returns its `asn` property.",
+    "cypher": "MATCH (:AtlasProbe {id: 1004379})-[:PART_OF]->(:AtlasMeasurement {id: 6907267})-[:TARGET]->(a:AS) RETURN a.asn"
+  },
+  {
+    "intent": "Find the ASes that are targeted by the Atlas measurement with ID 6907267. The Atlas probe with ID 1004379 participates in this measurement.",
+    "abstract_intent": "Find the Autonomous Systems targeted by a specific Atlas measurement, in which a specific Atlas probe participates.",
+    "methodology": "The query first locates the specified `:AtlasProbe` and `:AtlasMeasurement` nodes by their unique IDs. It then traverses the `:PART_OF` relationship from the probe to the measurement to confirm their connection. Finally, it follows the `:TARGET` relationship from the `:AtlasMeasurement` to identify the `:AS` node being measured.",
+    "cypher": "MATCH (:AtlasProbe {id: 1004379})-[:PART_OF]->(:AtlasMeasurement {id: 6907267})-[:TARGET]->(a:AS) RETURN a.asn"
+  },
+  {
+    "intent": "Find the HostName's name which is the target of AtlasMeasurement with id 69298464 which the AtlasProbe with id 1004379 is part of.",
+    "abstract_intent": "Find the name of the HostName that is the target of a specific AtlasMeasurement, which a specific AtlasProbe is part of.",
+    "methodology": "First, the query identifies the starting :AtlasProbe node by its unique ID. It then traverses the outgoing :PART_OF relationship to the specified :AtlasMeasurement node. Finally, it follows the :TARGET relationship from the measurement to find the connected :HostName and returns its name property.",
+    "cypher": "MATCH (:AtlasProbe {id: 1004379})-[:PART_OF]->(:AtlasMeasurement {id: 69298464})-[:TARGET]->(h:HostName) RETURN h.name"
+  },
+  {
+    "intent": "Find the hostnames that are targeted by the Atlas measurement with ID 69298464. The Atlas probe with ID 1004379 participates in this measurement.",
+    "abstract_intent": "Find the hostnames targeted by a specific Atlas measurement, in which a specific Atlas probe participates.",
+    "methodology": "The query first locates the specific :AtlasProbe and :AtlasMeasurement nodes using their unique IDs. It then traverses the :PART_OF relationship from the probe to the measurement to confirm their connection. Finally, it follows the :TARGET relationship from the measurement to find the targeted :HostName node and returns its name.",
+    "cypher": "MATCH (:AtlasProbe {id: 1004379})-[:PART_OF]->(:AtlasMeasurement {id: 69298464})-[:TARGET]->(h:HostName) RETURN h.name"
+  },
+  {
+    "intent": "Find the IP's ip which is the target of AtlasMeasurement with id 6907267 which the AtlasProbe with id 1004379 is part of.",
+    "abstract_intent": "Find the target IP address of a specific AtlasMeasurement that a specific AtlasProbe is part of.",
+    "methodology": "First, I locate the `:AtlasProbe` node using its unique ID. Then, I traverse the `:PART_OF` relationship to find the connected `:AtlasMeasurement` node, also identified by its ID. Finally, I follow the `:TARGET` relationship from the measurement to the destination `:IP` node and return its `ip` property.",
+    "cypher": "MATCH (:AtlasProbe {id: 1004379})-[:PART_OF]->(:AtlasMeasurement {id: 6907267})-[:TARGET]->(i:IP) RETURN i.ip"
+  },
+  {
+    "intent": "Find the IPs that are targeted by the Atlas measurement with ID 6907267. The Atlas probe with ID 1004379 participates in this measurement.",
+    "abstract_intent": "Find the IP addresses targeted by a specific RIPE Atlas measurement in which a given RIPE Atlas probe participates.",
+    "methodology": "The query first locates the specified `:AtlasProbe` node using its `id`. It then traverses the outgoing `[:PART_OF]` relationship to find the `:AtlasMeasurement` it belongs to, also filtering by `id`. Finally, it follows the `[:TARGET]` relationship from the measurement to identify the connected `:IP` node and returns its `ip` property.",
+    "cypher": "MATCH (:AtlasProbe {id: 1004379})-[:PART_OF]->(:AtlasMeasurement {id: 6907267})-[:TARGET]->(i:IP) RETURN i.ip"
+  },
+  {
+    "intent": "Return the id of the OpaqueID which marks the Prefix with prefix 156.0.199.0/24 as available.",
+    "abstract_intent": "Find the OpaqueID associated with a specific IP Prefix.",
+    "methodology": "First, I locate the specific `:Prefix` node using its `prefix` property. From there, I traverse the outgoing `:AVAILABLE` relationship to find the connected `:OpaqueID` node. Finally, I return the `id` property of the resulting `:OpaqueID` node.",
+    "cypher": "MATCH (:Prefix {prefix: '156.0.199.0/24'})-[:AVAILABLE]->(o:OpaqueID) RETURN o.id"
+  },
+  {
+    "intent": "Find the opaque id of 156.0.199.0/24.",
+    "abstract_intent": "Find the Opaque ID associated with a specific IP prefix.",
+    "methodology": "The query first locates the `:Prefix` node using its unique `prefix` property. From this node, it traverses the `[:AVAILABLE]` relationship to find the directly connected `:OpaqueID` node. The final step is to return the `id` property of the identified `:OpaqueID` node.",
+    "cypher": "MATCH (:Prefix {prefix: '156.0.199.0/24'})-[:AVAILABLE]->(o:OpaqueID) RETURN o.id"
+  },
+  {
+    "intent": "Find all the distinct Tag labels that categorize the ASN with asn 109.",
+    "abstract_intent": "Find all distinct tag labels for a specific ASN.",
+    "methodology": "The query first identifies the `:AS` node with the property `asn` equal to 109. It then traverses the `:CATEGORIZED` relationship to find all connected `:Tag` nodes. Finally, it returns the distinct `label` property from each of these tags.",
+    "cypher": "MATCH (:AS {asn:109})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "Find tags for AS109.",
+    "abstract_intent": "Find all tags associated with a specific Autonomous System.",
+    "methodology": "First, the query locates the `:AS` node using its autonomous system number, 109. It then traverses all `:CATEGORIZED` relationships connected to this AS. Finally, the query returns the distinct `label` property from each resulting `:Tag` node.",
+    "cypher": "MATCH (:AS {asn:109})-[:CATEGORIZED]-(t:Tag) RETURN DISTINCT t.label"
+  },
+  {
+    "intent": "From the Ranking with name 'Cloudflare top 100 domains' find the DomainName's name that is ranked first.",
+    "abstract_intent": "Find the name of a DomainName that holds a specific rank within a given ranking.",
+    "methodology": "The query first locates the specific `:Ranking` node identified by the name 'Cloudflare top 100 domains'. It then traverses backwards along the incoming `:RANK` relationship, filtering for the one where the `rank` property is exactly 1. Finally, it returns the `name` property of the source `:DomainName` node that satisfies this condition.",
+    "cypher": "MATCH (d:DomainName)-[:RANK {rank: 1}]->(:Ranking {name: 'Cloudflare top 100 domains'}) RETURN d.name"
+  },
+  {
+    "intent": "Find the top domain name in the 'Cloudflare top 100 domains' list.",
+    "abstract_intent": "Find the highest-ranked entity from a specific ranking list.",
+    "methodology": "The query first locates the specific `:Ranking` node for 'Cloudflare top 100 domains'. It then traverses incoming `:RANK` relationships, filtering for the one with a `rank` property equal to 1. Finally, it identifies the source `:DomainName` node of this relationship and returns its name.",
+    "cypher": "MATCH (d:DomainName)-[:RANK {rank: 1}]->(:Ranking {name: 'Cloudflare top 100 domains'}) RETURN d.name"
+  },
+  {
+    "intent": "Find the population value for Country United States with country_code 'US'.",
+    "abstract_intent": "Find the population value for a specific Country identified by its country code.",
+    "methodology": "First, the query locates the `:Country` node using its `country_code` property, 'US'. It then traverses the connected `:POPULATION` relationship to access its data. Finally, the query returns the `value` property from this relationship, which represents the country's population.",
+    "cypher": "MATCH (:Country {country_code: 'US'})-[p:POPULATION]-() RETURN p.value"
+  },
+  {
+    "intent": "Find the population of the United States.",
+    "abstract_intent": "Find the population of a specific country.",
+    "methodology": "First, the query locates the `:Country` node for the United States by filtering on its `country_code` property, 'US'. It then traverses the `:POPULATION` relationship connected to this node. Finally, the query returns the `value` property from the relationship itself, which contains the population figure.",
+    "cypher": "MATCH (:Country {country_code: 'US'})-[p:POPULATION]-() RETURN p.value"
+  },
+  {
+    "intent": "Count the distinct ASes in the Country with country_code 'JP' or 'US'.",
+    "abstract_intent": "Count the number of distinct Autonomous Systems for a given list of country codes.",
+    "methodology": "The query first finds all `:AS` nodes that have a `:COUNTRY` relationship to a `:Country` node. It then filters these `:Country` nodes to only include those where the `country_code` property is either 'JP' or 'US'. Finally, for each of these countries, it counts the number of distinct `:AS` nodes connected to it.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY]-(cc:Country) WHERE cc.country_code = 'JP' OR cc.country_code = 'US' WITH cc.country_code AS code, count(DISTINCT a) AS c RETURN c"
+  },
+  {
+    "intent": "Count the ASes in Japan and the United States.",
+    "abstract_intent": "Count the number of ASes in a given list of countries.",
+    "methodology": "The query first identifies all nodes with the `:AS` label. It then traverses the `:COUNTRY` relationship to find connected `:Country` nodes. Finally, it filters these countries to only include those with a `country_code` of 'JP' or 'US' and returns a distinct count of the Autonomous Systems for each country.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY]-(cc:Country) WHERE cc.country_code = 'JP' OR cc.country_code = 'US' WITH cc.country_code AS code, count(DISTINCT a) AS c RETURN c"
+  },
+  {
+    "intent": "Find the total number of distinct ASes that originate a prefix in the Country with country_code 'JP'",
+    "abstract_intent": "Count the total number of distinct Autonomous Systems in a specific country that originate at least one IP prefix.",
+    "methodology": "First, the query locates the `:Country` node using the property `country_code` 'JP'. It then traverses the `:COUNTRY` relationship to find all associated `:AS` nodes. Finally, for each AS, it checks for an `:ORIGINATE` relationship to any `:Prefix` and returns the total count of distinct ASes that satisfy this path.",
+    "cypher": "MATCH (:Country {country_code: 'JP'})-[:COUNTRY]-(as:AS)-[:ORIGINATE]-(:Prefix) RETURN count(DISTINCT as) AS totalASWithPrefix"
+  },
+  {
+    "intent": "Count ASes in Japan that originate prefixes.",
+    "abstract_intent": "Count the number of Autonomous Systems in a given country that originate at least one IP prefix.",
+    "methodology": "First, the query identifies the `:Country` node for Japan using its `country_code`. It then traverses the `[:COUNTRY]` relationship to find all associated `:AS` nodes. Finally, it filters these ASes by checking for an `[:ORIGINATE]` relationship to any `:Prefix` node and returns the distinct count of the matching ASes.",
+    "cypher": "MATCH (:Country {country_code: 'JP'})-[:COUNTRY]-(as:AS)-[:ORIGINATE]-(:Prefix) RETURN count(DISTINCT as) AS totalASWithPrefix"
+  },
+  {
+    "intent": "Find all Facility nodes in which both the AS with asn 1233 and the AS with asn 2497 are located.",
+    "abstract_intent": "Find all Facility nodes where two specified Autonomous Systems are co-located.",
+    "methodology": "The query initiates two starting points by matching two distinct `:AS` nodes using their `asn` properties. It then searches for a path where both of these `:AS` nodes are connected to a common `:Facility` node. The query returns the shared `:Facility` nodes where both Autonomous Systems are co-located.",
+    "cypher": "MATCH (a:AS {asn: 1233})--(fac:Facility)--(b:AS {asn: 2497}) RETURN fac"
+  },
+  {
+    "intent": "Find co-location facilities of AS1233 and AS2497.",
+    "abstract_intent": "Find the common co-location facilities for two specified Autonomous Systems (ASNs).",
+    "methodology": "First, the query identifies two distinct `:AS` nodes using their unique `asn` properties. It then finds a path from one `:AS` to a `:Facility` node, and from that same `:Facility` node to the second `:AS`. The query returns the common `:Facility` nodes that connect both specified Autonomous Systems.",
+    "cypher": "MATCH (a:AS {asn: 1233})--(fac:Facility)--(b:AS {asn: 2497}) RETURN fac"
+  },
+  {
+    "intent": "Find the distinct Country's country codes for all the Facilities in which the AS with asn 1233 and the AS with asn 2497 are located.",
+    "abstract_intent": "Find the distinct country codes for all facilities where two specified ASes are co-located.",
+    "methodology": "First, the query identifies all `:Facility` nodes that are simultaneously connected to both the `:AS` with `asn: 1233` and the `:AS` with `asn: 2497`. For each of these shared facilities, it then finds the associated `:Country` node. Finally, the query returns the distinct `country_code` for each of these countries.",
+    "cypher": "MATCH (:AS {asn: 1233})--(fac:Facility)--(:AS {asn: 2497}) MATCH (fac)--(cc:Country) RETURN DISTINCT(cc.country_code)"
+  },
+  {
+    "intent": "Find the country codes for all co-location facilities of AS1233 and AS2497.",
+    "abstract_intent": "Find the country codes for all co-location facilities shared by a given set of ASNs.",
+    "methodology": "First, the query identifies all `:Facility` nodes that are mutually connected to the two specified `:AS` nodes. For each of these shared facilities, it then finds the associated `:Country` node. Finally, the query returns the distinct country codes for these facilities.",
+    "cypher": "MATCH (:AS {asn: 1233})--(fac:Facility)--(:AS {asn: 2497}) MATCH (fac)--(cc:Country) RETURN DISTINCT(cc.country_code)"
+  },
+  {
+    "intent": "Find all distinct Country's country codes for all ASes connected to the OpaqueID that is assigned to the AS with asn 1233 or the AS with asn 2497.",
+    "abstract_intent": "Find the countries of all Autonomous Systems that share a common OpaqueID with a given set of Autonomous Systems.",
+    "methodology": "First, find the `:OpaqueID` node(s) connected to the specified `:AS` nodes (AS1233, AS2497). From these shared `:OpaqueID` nodes, find all other connected `:AS` nodes. Finally, traverse from these ASes to their associated `:Country` nodes to return the distinct country codes.",
+    "cypher": "MATCH (a:AS)-[:ASSIGNED]-(oid:OpaqueID) WHERE a.asn IN [1233, 2497] WITH oid MATCH (oid)--(other:AS)--(cc:Country) RETURN DISTINCT cc.country_code"
+  },
+  {
+    "intent": "Find the country codes for all ASes assigned to the same OpaqueID as AS1233 or AS2497.",
+    "abstract_intent": "Find the country codes for all Autonomous Systems that share a common OpaqueID with a given set of ASNs.",
+    "methodology": "First, the query identifies the specified `:AS` nodes (AS1233, AS2497) and traverses the `[:ASSIGNED]` relationship to find their common `:OpaqueID`. From this shared identifier, it finds all other connected `:AS` nodes. Finally, it traverses from these other ASes to their associated `:Country` nodes to return the distinct country codes.",
+    "cypher": "MATCH (a:AS)-[:ASSIGNED]-(oid:OpaqueID) WHERE a.asn IN [1233, 2497] WITH oid MATCH (oid)--(other:AS)--(cc:Country) RETURN DISTINCT cc.country_code"
+  },
+  {
+    "intent": "Find the nodes that have relationships to the Prefix with prefix 1.1.1.0/24. Do not take account the direction of the relationship.",
+    "abstract_intent": "Find all nodes that have a direct relationship with a specific Prefix.",
+    "methodology": "The query first locates the specific `:Prefix` node using its `prefix` property. It then traverses all relationships connected to this node, regardless of direction. Finally, it returns all the neighboring nodes at the other end of these relationships.",
+    "cypher": "MATCH (:Prefix {prefix:'1.1.1.0/24'})--(neighbor) RETURN neighbor"
+  },
+  {
+    "intent": "Return everything that is connected with 1.1.1.0/24.",
+    "abstract_intent": "Find all nodes directly connected to a specific Prefix.",
+    "methodology": "First, the query locates the specific `:Prefix` node where the `prefix` property is '1.1.1.0/24'. It then traverses all relationships connected to this node, regardless of their type or direction. Finally, it returns all the immediate neighbor nodes it finds.",
+    "cypher": "MATCH (:Prefix {prefix:'1.1.1.0/24'})--(neighbor) RETURN neighbor"
+  },
+  {
+    "intent": "Find distinct Country's country_codes that connect via a relationship with reference_name 'nro.delegated_stats' to the AS with asn 109.",
+    "abstract_intent": "Find the country codes for countries associated with a specific AS via a relationship having a particular reference name.",
+    "methodology": "First, the query locates the specific :AS node where the `asn` property is 109. It then traverses any relationship that has a `reference_name` property of 'nro.delegated_stats' to find all connected :Country nodes. Finally, it collects and returns the unique `country_code` property from each of these matched :Country nodes.",
+    "cypher": "MATCH (:AS {asn:109})-[{reference_name:'nro.delegated_stats'}]-(cc:Country) RETURN DISTINCT cc.country_code"
+  },
+  {
+    "intent": "Find the country codes for the countries in which AS109 is registered according to the NRO delegated stats.",
+    "abstract_intent": "Find the country codes of the registration countries for a specific AS, based on the NRO data source.",
+    "methodology": "The query first finds the `:AS` node where the `asn` property is 109. It then traverses any relationship with the property `reference_name` set to 'nro.delegated_stats' to find connected `:Country` nodes. Finally, it returns the distinct `country_code` property from each of the matched `:Country` nodes.",
+    "cypher": "MATCH (:AS {asn:109})-[{reference_name:'nro.delegated_stats'}]-(cc:Country) RETURN DISTINCT cc.country_code"
+  },
+  {
+    "intent": "Find IXP nodes where the AS with asn 109 is member of together with their corresponding Country node.",
+    "abstract_intent": "For a given Autonomous System (AS), find all the Internet Exchange Points (IXPs) it is a member of and the countries where those IXPs are located.",
+    "methodology": "The query starts by finding the specific `:AS` node for ASN 109. From this node, it traverses all outgoing `:MEMBER_OF` relationships to identify the `:IXP` nodes it is connected to. Finally, it follows the relationship from each `:IXP` node to its corresponding `:Country` node to find its location.",
+    "cypher": "MATCH (iij:AS {asn:109})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix, cc"
+  },
+  {
+    "intent": "Find IXP nodes and their respective country nodes for IXPs of which AS109 is a member.",
+    "abstract_intent": "For a given Autonomous System, find all the Internet Exchange Points (IXPs) it is a member of and the countries where those IXPs are located.",
+    "methodology": "First, the query locates the specific `:AS` node with the `asn` property of 109. From this starting point, it traverses the `:MEMBER_OF` relationship to find all `:IXP` nodes that the AS is connected to. Finally, it follows the relationship from each `:IXP` node to its corresponding `:Country` node to identify the location.",
+    "cypher": "MATCH (iij:AS {asn:109})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix, cc"
+  },
+  {
+    "intent": "Find all the DomainName nodes with a rank below or equal 50000 that resolve to an IP originated by the AS with asn 109.",
+    "abstract_intent": "Find all DomainName nodes below a specific rank threshold that resolve to an IP address originated by a given Autonomous System (AS).",
+    "methodology": "First, the query identifies all :DomainName nodes connected to a :Ranking via a :RANK relationship, filtering for those with a rank of 50,000 or lower. It then follows the resolution path from each :DomainName through its corresponding :HostName, :IP, and containing :Prefix. Finally, it filters this list to retain only the domains whose prefixes are linked to the specified :AS via an :ORIGINATE relationship.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(iij:AS {asn:109}) WHERE r.rank <= 50000 RETURN dn"
+  },
+  {
+    "intent": "Retrieve domain name nodes in the top 50000 associated with IP addresses of AS109.",
+    "abstract_intent": "Retrieve all domain names within a specified popularity rank that are associated with IP addresses originated by a given Autonomous System (AS).",
+    "methodology": "The query starts by finding the specified `:AS` node and then traverses backwards along the infrastructure path. It follows the `:ORIGINATE` relationship to find all associated `:Prefix` nodes, then continues through `:IP` and `:HostName` nodes to identify the corresponding `:DomainName` nodes. Finally, it filters these domains by checking their `:RANK` relationship to ensure they are within the top 50,000.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(iij:AS {asn:109}) WHERE r.rank <= 50000 RETURN dn"
+  },
+  {
+    "intent": "Find all the Facility nodes that are located in the Country with country_code 'JP' or 'US' and return the Facility node with a count of distinct AS nodes per facility in descending order of the count.",
+    "abstract_intent": "For a given list of countries, find all colocation facilities and rank them by the number of distinct Autonomous Systems present in each.",
+    "methodology": "The query first identifies `:Country` nodes with specific country codes. It then traverses to any connected `:Facility` nodes and, from there, finds all connected `:AS` nodes. Finally, the query groups results by each `:Facility`, counts the number of distinct `:AS` nodes, and returns the facilities ordered from the highest count to the lowest.",
+    "cypher": "MATCH (c:Country)--(f:Facility)--(a:AS) WHERE c.country_code = 'JP' OR c.country_code = 'US' RETURN f, count(DISTINCT a) AS nb_as ORDER BY nb_as DESC"
+  },
+  {
+    "intent": "Get all facilities in Japan or United States and count the number of unique ASes per facility. Order the result by descending number of unique ASes.",
+    "abstract_intent": "Find all facilities within a given set of countries and count the number of unique ASes present in each facility, ordering the result by the AS count.",
+    "methodology": "The query first identifies `:Country` nodes for the specified country codes. It then finds all `:Facility` nodes connected to these countries. Finally, for each facility, the query traverses to all connected `:AS` nodes, calculates a distinct count of these ASes, and orders the facilities by this count in descending order.",
+    "cypher": "MATCH (c:Country)--(f:Facility)--(a:AS) WHERE c.country_code = 'JP' OR c.country_code = 'US' RETURN f, count(DISTINCT a) AS nb_as ORDER BY nb_as DESC"
+  },
+  {
+    "intent": "Find the country_code of Facility nodes in which the AS with Country country_code 'JP' connected by relationship with reference_org 'NRO' are located and return the facility country_code and number of distinct ASes in descending order by number of distinct ASes.",
+    "abstract_intent": "For all ASes registered in a given country, find the countries where their physical facilities are located, and rank these facility countries by the number of distinct ASes they host.",
+    "methodology": "The query first identifies `:AS` nodes registered in a specific country by traversing the `:COUNTRY` relationship with the property `reference_org: 'NRO'`. From these ASes, it follows the `:LOCATED_IN` relationship to find the `:Facility` nodes where they have a presence. Finally, it finds the `:Country` associated with each facility, groups by the facility's country, and counts the distinct ASes from the origin country.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY {reference_org:'NRO'}]-(net:AS)-[:LOCATED_IN]-(fac:Facility)--(fac_country:Country) WHERE net_country.country_code = 'JP' RETURN fac_country.country_code, count(DISTINCT net) AS nb_AS ORDER BY nb_AS DESC"
+  },
+  {
+    "intent": "Find the country codes of facilities that host Japanese ASes as specified by NRO and return the number of ASes per country. Order the result by descending number of ASes per country.",
+    "abstract_intent": "Find the countries where facilities hosting ASes from a specific country are located, and count the number of those ASes per facility country.",
+    "methodology": "First, I identify all `:AS` nodes registered in a specific country ('JP') by traversing the `:COUNTRY` relationship with the 'NRO' reference. From these ASes, I follow the `:LOCATED_IN` relationship to find the `:Facility` nodes where they are present. Finally, I determine the `:Country` for each facility, group the results by the facility's country code, and count the number of distinct ASes from the original country.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY {reference_org:'NRO'}]-(net:AS)-[:LOCATED_IN]-(fac:Facility)--(fac_country:Country) WHERE net_country.country_code = 'JP' RETURN fac_country.country_code, count(DISTINCT net) AS nb_AS ORDER BY nb_AS DESC"
+  },
+  {
+    "intent": "Find the AS in the Country with country_code 'JP' or 'US' that is located in the largest number of facilities and return the asn and number of facilities.",
+    "abstract_intent": "Find the Autonomous System, registered in a specific list of countries, that is located in the largest number of facilities and return its ASN and the total facility count.",
+    "methodology": "First, the query identifies `:AS` nodes that are registered in the specified countries ('JP', 'US') by traversing the `[:COUNTRY]` relationship from a `:Country` node. For each of these ASes, it then follows the `[:LOCATED_IN]` relationship to find all connected `:Facility` nodes. Finally, it counts the distinct facilities for each AS and returns the one with the highest count.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY {reference_org:'NRO'}]-(net:AS)-[:LOCATED_IN]-(fac:Facility) WHERE net_country.country_code = 'JP' OR net_country.country_code = 'US' RETURN net.asn, count(DISTINCT fac) AS nb_fac ORDER BY nb_fac DESC LIMIT 1"
+  },
+  {
+    "intent": "Retrieve the ASN that is present at the largest number of facilities in Japan or United States. Also return the number of facilities.",
+    "abstract_intent": "Find the Autonomous System (AS) that is present in the highest number of facilities within a given list of countries, and return its ASN and the facility count.",
+    "methodology": "First, the query identifies `:AS` nodes that are registered in the specified countries ('JP', 'US') by traversing the `:COUNTRY` relationship from a `:Country` node. It then follows the `:LOCATED_IN` relationship from each of these ASes to find all connected `:Facility` nodes. Finally, it counts the distinct facilities for each AS and returns the one with the highest count.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY {reference_org:'NRO'}]-(net:AS)-[:LOCATED_IN]-(fac:Facility) WHERE net_country.country_code = 'JP' OR net_country.country_code = 'US' RETURN net.asn, count(DISTINCT fac) AS nb_fac ORDER BY nb_fac DESC LIMIT 1"
+  },
+  {
+    "intent": "Find the Country's country_code of the Prefix nodes that originated from AS nodes located in Country with country_code 'JP'.",
+    "abstract_intent": "Find the geographic country codes of prefixes that are originated by Autonomous Systems registered in a specific country.",
+    "methodology": "First, the query identifies the `:Country` node for 'JP' and traverses the `:COUNTRY` relationship to find all associated `:AS` nodes. From these ASes, it follows the `:ORIGINATE` relationship to find all the `:Prefix` nodes they announce. Finally, for each `:Prefix`, it traverses its own `:COUNTRY` relationship to determine its geographic location and returns that country's code.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'JP' RETURN pfx_country.country_code"
+  },
+  {
+    "intent": "Get the geolocation of prefixes announced by Japanese ASes.",
+    "abstract_intent": "Get the geolocation countries for prefixes that are announced by Autonomous Systems registered in a specific country.",
+    "methodology": "First, the query identifies all `:AS` nodes registered in a specific `:Country` (Japan) by traversing the `:COUNTRY` relationship. It then finds all `:Prefix` nodes announced by these ASes via the `:ORIGINATE` relationship. Finally, for each prefix, it traverses another `:COUNTRY` relationship to determine the prefix's specific geolocation and returns that country's code.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'JP' RETURN pfx_country.country_code"
+  },
+  {
+    "intent": "Find the distinct Country's country_code of the Prefix nodes that originated from AS nodes located in the Country with country_code 'JP'.",
+    "abstract_intent": "Find the distinct countries where prefixes are located, given that these prefixes originate from Autonomous Systems registered in a specific country.",
+    "methodology": "First, the query identifies the `:Country` node for 'JP' and finds all `:AS` nodes connected to it via a `[:COUNTRY]` relationship. From these ASes, it traverses the `[:ORIGINATE]` relationship to find all associated `:Prefix` nodes. Finally, it follows the `[:COUNTRY]` relationship from each `:Prefix` to determine its geographic location and returns the distinct country codes.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'JP' RETURN DISTINCT pfx_country.country_code"
+  },
+  {
+    "intent": "Get the country codes of prefixes announced by ASes in Japan.",
+    "abstract_intent": "Get the country codes of prefixes announced by ASes located in a specific country.",
+    "methodology": "First, the query identifies the `:Country` node for 'JP' and finds all associated `:AS` nodes via the `:COUNTRY` relationship. From these ASes, it traverses the `:ORIGINATE` relationship to find all announced `:Prefix` nodes. Finally, it follows the `:COUNTRY` relationship from each `:Prefix` to find its respective country and returns the distinct country codes.",
+    "cypher": "MATCH (net_country:Country)-[:COUNTRY]-(net:AS)-[:ORIGINATE]-(pfx:Prefix)-[:COUNTRY]-(pfx_country:Country) WHERE net_country.country_code = 'JP' RETURN DISTINCT pfx_country.country_code"
+  },
+  {
+    "intent": "Find the asn of the AS node with the largest number of Prefix nodes in Country with country_code 'JP' or 'US' and return the asn and the number of prefixes.",
+    "abstract_intent": "Find the Autonomous System that originates the largest number of IP prefixes within a specific set of countries, and return its ASN and the total prefix count.",
+    "methodology": "The query identifies all Autonomous Systems (:AS) and traverses the undirected :ORIGINATE relationship to find the :Prefix nodes they announce. It then follows the connection from each :Prefix to its corresponding :Country node, filtering for prefixes located in either 'JP' or 'US'. Finally, the query groups the results by AS, counts the distinct prefixes for each, and returns the ASN with the highest count.",
+    "cypher": "MATCH (net:AS)-[:ORIGINATE]-(pfx:Prefix)--(pfx_country:Country) WHERE pfx_country.country_code = 'JP' OR pfx_country.country_code = 'US' RETURN net.asn, COUNT(DISTINCT pfx) as pfx_count ORDER BY pfx_count DESC LIMIT 1"
+  },
+  {
+    "intent": "Get the ASN with the largest footprint in Japan or United States.",
+    "abstract_intent": "Identify the Autonomous System (AS) that originates the most IP prefixes within a specified list of countries.",
+    "methodology": "First, the query identifies all Autonomous System (:AS) nodes and traverses the undirected :ORIGINATE relationship to find all associated :Prefix nodes. From each :Prefix, it follows the connection to a :Country node to determine the prefix's geographic location. Finally, it filters for prefixes located in the specified countries, counts the distinct prefixes per AS, and returns the AS with the highest count.",
+    "cypher": "MATCH (net:AS)-[:ORIGINATE]-(pfx:Prefix)--(pfx_country:Country) WHERE pfx_country.country_code = 'JP' OR pfx_country.country_code = 'US' RETURN net.asn, COUNT(DISTINCT pfx) as pfx_count ORDER BY pfx_count DESC LIMIT 1"
+  },
+  {
+    "intent": "Find a graph which shows the HostName nodes, the IP nodes, the Prefix nodes and the AS nodes of all the HostName nodes with name which it ends with '.jp'. Also, the HostName nodes should have rank below 10000.",
+    "abstract_intent": "Find the IP addresses, Prefixes, and Autonomous Systems for highly-ranked HostNames that belong to a specific country's top-level domain.",
+    "methodology": "First, the query identifies `:HostName` nodes by filtering for names ending with a specific country code and having a rank below a certain threshold, accessed via a `:RANK` relationship. It then traverses from each selected `:HostName` to its corresponding `:IP` address. Finally, the query follows the path from the `:IP` to its containing `:Prefix` and then to the originating `:AS` via the `:ORIGINATE` relationship to map the full infrastructure.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.jp' AND r.rank<10000 RETURN dn.name, ip.ip, pfx.prefix, net.asn"
+  },
+  {
+    "intent": "Get a graph of the host name distribution of the Japanese host name.",
+    "abstract_intent": "Map the network infrastructure, including IP addresses, prefixes, and Autonomous Systems, for top-ranked hostnames associated with a specific country-code top-level domain (ccTLD).",
+    "methodology": "First, the query identifies highly-ranked `:HostName` nodes by filtering on the `:RANK` relationship, specifically selecting those whose names end with the '.jp' suffix. It then traverses from each `:HostName` to the `:IP` address it resolves to, and subsequently to the `:Prefix` that contains the IP. Finally, the query follows the `:ORIGINATE` relationship to find the `:AS` that announces the prefix, mapping the hostname to its network origin.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.jp' AND r.rank<10000 RETURN dn.name, ip.ip, pfx.prefix, net.asn"
+  },
+  {
+    "intent": "Find the AS nodes that contains HostName nodes with name ending in '.jp' and a rank below or equal 1000000. Return the asn and also the total number of the HostName nodes in descending order.",
+    "abstract_intent": "Find the Autonomous Systems that host highly-ranked hostnames belonging to a specific country TLD. Return the ASN for each and the total count of these hostnames, ordered by the count in descending order.",
+    "methodology": "The query first identifies `:HostName` nodes that have a `:RANK` relationship with a rank at or below 100,000 and whose name ends with '.jp'. From these hostnames, it traverses through the corresponding `:IP` and `:Prefix` nodes. Finally, it follows the `:ORIGINATE` relationship from the `:Prefix` to find the hosting `:AS`, counts the distinct hostnames per AS, and returns the results.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.jp' AND r.rank <= 100000 RETURN net.asn,  count(DISTINCT dn) AS nb_domain_name ORDER BY nb_domain_name DESC"
+  },
+  {
+    "intent": "Get ASNs that host the top 1 milion Japanese host names and return them in descending order of the number of host names.",
+    "abstract_intent": "Identify Autonomous Systems that host the top N ranked hostnames for a specific country TLD, and list them in descending order based on the number of hostnames they host.",
+    "methodology": "The query first identifies `:HostName` nodes connected to a `:Ranking` via a `:RANK` relationship, filtering for ranks within the top 100,000 and names ending in '.jp'. It then traverses from each hostname through its associated `:IP` and `:Prefix` to find the hosting `:AS` via the `:ORIGINATE` relationship. Finally, the results are grouped by each `:AS` to count the distinct hostnames they host, and ordered descending by this count.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.jp' AND r.rank <= 100000 RETURN net.asn, count(DISTINCT dn) AS nb_domain_name ORDER BY nb_domain_name DESC"
+  },
+  {
+    "intent": "Find Name nodes directly connected to AS node with asn 109 and return the distinctnames.",
+    "abstract_intent": "Find all distinct names associated with a specific Autonomous System (AS) identified by its ASN.",
+    "methodology": "The query first locates the `:AS` node with the property `asn` equal to 109. It then traverses any relationship connected to this AS to find all directly linked `:Name` nodes. Finally, it returns the unique `name` property from each of the discovered `:Name` nodes.",
+    "cypher": "MATCH (:AS {asn:109})--(n:Name) RETURN DISTINCT n.name"
+  },
+  {
+    "intent": "Find all the names of AS109.",
+    "abstract_intent": "Find all names associated with a specific Autonomous System (AS).",
+    "methodology": "First, the query locates the `:AS` node where the `asn` property is 109. It then traverses all connected relationships to find any adjacent `:Name` nodes. Finally, it returns the unique `name` property from each of these `:Name` nodes.",
+    "cypher": "MATCH (:AS {asn:109})--(n:Name) RETURN DISTINCT n.name"
+  },
+  {
+    "intent": "Find nodes of any type that are connected to the node corresponding to Prefix '1.1.1.0/24'.",
+    "abstract_intent": "Find all nodes of any type that are directly connected to a specific Prefix.",
+    "methodology": "The query first identifies the starting node by finding the `:Prefix` with the specified `prefix` property. It then traverses all relationships connected to this node, regardless of their direction, using the undirected `--` pattern. Finally, it returns the nodes at the other end of these relationships, which are the direct neighbors.",
+    "cypher": "MATCH (:Prefix {prefix:'1.1.1.0/24'})--(neighbor) RETURN neighbor"
+  },
+  {
+    "intent": "Get everything related to prefix '1.1.1.0/24'.",
+    "abstract_intent": "Find all nodes directly connected to a given IP Prefix.",
+    "methodology": "The query first anchors the search on a specific `:Prefix` node identified by its `prefix` property. It then traverses all relationships connected to this node, without regard to direction or type. The query concludes by returning all the immediate neighboring nodes it discovered.",
+    "cypher": "MATCH (:Prefix {prefix:'1.1.1.0/24'})--(neighbor) RETURN neighbor"
+  },
+  {
+    "intent": "Get a Country node directly connected to AS with asn 109 and that comes from NRO's delegated stats.",
+    "abstract_intent": "Find the Country associated with a given Autonomous System (AS) based on a specific data source reference.",
+    "methodology": "First, the query locates the `:AS` node with the property `asn` equal to 109. It then traverses any relationship connected to this AS, filtering for those where the `reference_name` property is specifically 'nro.delegated_stats'. Finally, it returns the `:Country` node found at the other end of this specific relationship.",
+    "cypher": "MATCH (:AS {asn:109})-[{reference_name:'nro.delegated_stats'}]-(cc:Country) RETURN cc"
+  },
+  {
+    "intent": "Find the country of AS109 using the NRO's delegated stats",
+    "abstract_intent": "Find the country associated with a given Autonomous System Number (ASN) by filtering the relationship based on a specific data source reference.",
+    "methodology": "The query first locates the `:AS` node where the `asn` property is 109. It then traverses any relationship that has a `reference_name` property of 'nro.delegated_stats'. Finally, the query returns the connected `:Country` node, which represents the registration country of the AS according to that specific data source.",
+    "cypher": "MATCH (:AS {asn:109})-[{reference_name:'nro.delegated_stats'}]-(cc:Country) RETURN cc"
+  },
+  {
+    "intent": "Find the IXP's name and its Country's country_code for IXPs of which the AS with asn 109 is ember of.",
+    "abstract_intent": "Find the names and country codes of all Internet Exchange Points (IXPs) where a specific AS is a member.",
+    "methodology": "First, the query locates the `:AS` node with the specified ASN, 109. It then traverses the `:MEMBER_OF` relationship to find all `:IXP` nodes this AS is a member of. Finally, it follows the connection from each `:IXP` to its corresponding `:Country` node to retrieve the name of the IXP and the country code.",
+    "cypher": "MATCH (:AS {asn:109})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix.name, cc.country_code"
+  },
+  {
+    "intent": "Get the country codes and names of IXPs where AS109 is present.",
+    "abstract_intent": "Find the names and country codes of all Internet Exchange Points (IXPs) where a specific AS is a member.",
+    "methodology": "First, the query locates the specific :AS node using its ASN. It then traverses the [:MEMBER_OF] relationship to find all connected :IXP nodes where this AS is a member. Finally, it follows the connection from each :IXP to its corresponding :Country node to retrieve the country's details.",
+    "cypher": "MATCH (:AS {asn:109})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix.name, cc.country_code"
+  },
+  {
+    "intent": "Select the HostName nodes in top 50k rankings that resolves to an IP node which is part of a prefix originated by AS with asn 109.",
+    "abstract_intent": "Find all HostName nodes within a specified top rank that resolve to an IP address belonging to a prefix originated by a specific AS.",
+    "methodology": "First, the query identifies `:HostName` nodes connected to a `:Ranking` via a `:RANK` relationship, filtering for a rank of 50,000 or less. It then follows the resolution path from each `:HostName` to its `:IP`, then to its containing `:Prefix` via a `:PART_OF` relationship. Finally, the query checks the `:ORIGINATE` relationship to select only those prefixes announced by the specified `:AS`.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)-[:PART_OF]-(pfx:Prefix)-[:ORIGINATE]-(cisco:AS {asn:109}) WHERE r.rank <= 50000 RETURN dn"
+  },
+  {
+    "intent": "Get host names in the top 50k hosted by AS109.",
+    "abstract_intent": "Find the top N ranked hostnames hosted by a specific Autonomous System (AS).",
+    "methodology": "The query first identifies `:HostName` nodes that have a `:RANK` relationship and filters them to include only those with a rank of 50,000 or less. From these hostnames, it traverses through the `:IP` they resolve to and the `:Prefix` that contains the IP. Finally, it checks if this prefix has an `:ORIGINATE` relationship with the specified `:AS` to find all matching hostnames.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)-[:PART_OF]-(pfx:Prefix)-[:ORIGINATE]-(cisco:AS {asn:109}) WHERE r.rank <= 50000 RETURN dn"
+  },
+  {
+    "intent": "From the top 10k HostName nodes select HostName nodes that end with '.us' and return the HostName's name, the corresponding IP, prefix, and the AS' asn.",
+    "abstract_intent": "Find the IP address, prefix, and originating AS number for top-ranked HostName nodes that match a specific TLD suffix.",
+    "methodology": "First, the query identifies top-ranked `:HostName` nodes by matching them to a `:Ranking` node via a `:RANK` relationship, filtering for ranks within the top 10,000 and names ending with '.us'. For each qualifying `:HostName`, it traverses to the associated `:IP` address, then to the encompassing `:Prefix`. Finally, it follows the `:ORIGINATE` relationship from the `:Prefix` to find the originating `:AS` and returns the details from each step.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.us' AND r.rank <= 10000 RETURN dn.name, ip.ip, pfx.prefix, net.asn"
+  },
+  {
+    "intent": "Get US host names ranked in the top 10k together with their IP, prefix, and ASN.",
+    "abstract_intent": "Get the IP address, prefix, and ASN for hostnames that are associated with a specific country TLD and are within a given rank threshold.",
+    "methodology": "First, the query identifies `:HostName` nodes that have a `:RANK` relationship, filtering them by rank and by names ending with the '.us' TLD. It then traverses from each matching `:HostName` to its associated `:IP` address and `:Prefix`. Finally, the query follows the `:ORIGINATE` relationship from the `:Prefix` to find the corresponding `:AS`.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.us' AND r.rank <= 10000 RETURN dn.name, ip.ip, pfx.prefix, net.asn"
+  },
+  {
+    "intent": "Select the top 20 AS nodes from Ranking with name 'IHR country ranking: Total AS (RU)' that are in a peer-to-peer relationship and return their asn.",
+    "abstract_intent": "Find pairs of AS nodes that are ranked within the top N of a specific ranking and are connected by a peer-to-peer relationship, and return their identifiers.",
+    "methodology": "First, the query identifies the specific ':Ranking' node by its name. It then finds all pairs of ':AS' nodes that are connected to this ranking via a ':RANK' relationship, filtering for those where the rank is within the top 20. Finally, it checks for a ':PEERS_WITH' relationship between these top-ranked AS pairs, ensuring the relationship property 'rel' is 0 to signify a peer-to-peer connection.",
+    "cypher": "MATCH (a:AS)-[ra:RANK]->(:Ranking {name: 'IHR country ranking: Total AS (RU)'})<-[rb:RANK]-(b:AS)-[p:PEERS_WITH]-(a) WHERE ra.rank <= 20 AND rb.rank <= 20 AND p.rel = 0 RETURN a.asn, b.asn"
+  },
+  {
+    "intent": "Return ASN pairs for ASes that are in a peer-to-peer relationship and in the top 20 of IHR’s country ranking for Russia.",
+    "abstract_intent": "Find pairs of ASNs that have a peer-to-peer relationship, where both ASes are within the top N of a specific country's ranking.",
+    "methodology": "First, the query identifies all :AS nodes connected to the specific 'IHR country ranking: Total AS (RU)' :Ranking node via a :RANK relationship, filtering for those where the rank is 20 or less. It then finds pairs among these top-ranked ASes that are connected by a :PEERS_WITH relationship. Finally, it filters these relationships to include only peer-to-peer connections by checking the property `p.rel = 0` before returning the ASN pairs.",
+    "cypher": "MATCH (a:AS)-[ra:RANK]->(:Ranking {name: 'IHR country ranking: Total AS (RU)'})<-[rb:RANK]-(b:AS)-[p:PEERS_WITH]-(a) WHERE ra.rank <= 20 AND rb.rank <= 20 AND p.rel = 0 RETURN a.asn, b.asn"
+  },
+  {
+    "intent": "Select the  AS nodes for AS node with asn 109 and find the shortest PEERS_WITH relationship to these AS nodes.",
+    "abstract_intent": "For a given AS, find the shortest peering paths to its direct dependencies, under the constraint that the path can only traverse through other ASes that are also direct dependencies.",
+    "methodology": "First, the query identifies a starting `:AS` node (ASN 109) and collects all other `:AS` nodes it relies on via the `:DEPENDS_ON` relationship. It then unwinds this collection to process each dependency individually. Finally, for each dependent `:AS`, it finds all the shortest paths back to the starting node using only `:PEERS_WITH` relationships, ensuring every node along the path was also in the initial dependency set.",
+    "cypher": "MATCH (a:AS {asn:109})-[h:DEPENDS_ON {af:4}]->(d:AS) WITH a, COLLECT(DISTINCT d) AS dependencies UNWIND dependencies as d MATCH p = allShortestPaths((a)-[:PEERS_WITH*]-(d)) WHERE a.asn <> d.asn AND all(r IN relationships(p) WHERE r.af = 4) AND all(n IN nodes(p) WHERE n IN dependencies) RETURN p"
+  },
+  {
+    "intent": "Retrieve the topology for AS109's dependencies.",
+    "abstract_intent": "Retrieve the peering topology among the direct dependencies of a specific Autonomous System.",
+    "methodology": "First, the query identifies the target `:AS` (AS109) and collects all other `:AS` nodes it relies on via the `:DEPENDS_ON` relationship. It then finds the shortest paths between the target AS and each of its dependencies using the `:PEERS_WITH` relationship. The query specifically filters these paths to ensure that every intermediate `:AS` node is also part of the initial dependency set, thereby mapping the internal topology of the dependency cone.",
+    "cypher": "MATCH (a:AS {asn:109})-[h:DEPENDS_ON {af:4}]->(d:AS) WITH a, COLLECT(DISTINCT d) AS dependencies UNWIND dependencies as d MATCH p = allShortestPaths((a)-[:PEERS_WITH*]-(d)) WHERE a.asn <> d.asn AND all(r IN relationships(p) WHERE r.af = 4) AND all(n IN nodes(p) WHERE n IN dependencies) RETURN p"
+  },
+  {
+    "intent": "Find the Country nodes of IXP nodes of which the AS node with asn 109 is member of. Return both the Country and IXP nodes.",
+    "abstract_intent": "For a given Autonomous System, find all the Internet Exchange Points (IXPs) it is a member of and the countries where those IXPs are located.",
+    "methodology": "First, the query locates the `:AS` node with the specified ASN. It then traverses all `:MEMBER_OF` relationships to find the `:IXP` nodes this AS is a member of. Finally, from each `:IXP` node, it follows the connecting relationship to find the associated `:Country` node.",
+    "cypher": "MATCH (cisco:AS {asn:109})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix, cc"
+  },
+  {
+    "intent": "Find the geographical footprint of IXPs of which AS109 is a member of.",
+    "abstract_intent": "Find the geographical footprint of Internet Exchange Points (IXPs) for a given Autonomous System (AS).",
+    "methodology": "First, the query identifies the starting `:AS` node using its unique ASN. From this node, it traverses all outgoing `:MEMBER_OF` relationships to find the `:IXP` nodes where the AS is present. Finally, for each `:IXP` found, it follows the connection to a `:Country` node to determine its geographical location.",
+    "cypher": "MATCH (cisco:AS {asn:109})-[:MEMBER_OF]-(ix:IXP)--(cc:Country) RETURN ix, cc"
+  },
+  {
+    "intent": "Find the Country nodes of the Facility nodes of the AS node with asn 109. Return both the Country and Facility nodes.",
+    "abstract_intent": "For a given AS, find all facilities it is located in and the countries of those facilities.",
+    "methodology": "The query first anchors on the specified `:AS` node using its `asn` property. From there, it traverses any relationship to find all connected `:Facility` nodes. Finally, from each `:Facility` node, it follows the path to its corresponding `:Country` node.",
+    "cypher": "MATCH (cisco:AS {asn:109})--(ix:Facility)--(cc:Country) RETURN ix, cc"
+  },
+  {
+    "intent": "Get the geographical footprint of facilities at which AS109 is located.",
+    "abstract_intent": "Find the countries for all facilities where a given AS is present.",
+    "methodology": "First, the query locates the specific `:AS` node for the given autonomous system number, 109. From this starting point, it traverses to all connected `:Facility` nodes, which represent the physical locations where the AS has equipment. Finally, from each `:Facility` node, it finds the associated `:Country` node to determine the facility's geographical location.",
+    "cypher": "MATCH (cisco:AS {asn:109})--(ix:Facility)--(cc:Country) RETURN ix, cc"
+  },
+  {
+    "intent": "Find the Country nodes from the Prefix nodes that originate from AS node with asn 109. Return the Country and Prefix nodes.",
+    "abstract_intent": "For a given AS, find all the prefixes it originates and the countries those prefixes are associated with.",
+    "methodology": "First, the query anchors on the specified `:AS` node using its `asn` property. It then traverses the `:ORIGINATE` relationship to find all connected `:Prefix` nodes. Finally, from each `:Prefix` node, it follows the relationship to its associated `:Country` node to identify the prefix's geographic location.",
+    "cypher": "MATCH (cisco:AS {asn:109})-[:ORIGINATE]-(pfx:Prefix)--(cc:Country) RETURN pfx, cc"
+  },
+  {
+    "intent": "Get the countries of prefixes announced by AS109 and return the country and prefix nodes.",
+    "abstract_intent": "Find the geographic countries associated with the IP prefixes originated by a specific Autonomous System (AS).",
+    "methodology": "First, the query identifies the specific `:AS` node using its ASN, 109. It then traverses the `:ORIGINATE` relationship to find all connected `:Prefix` nodes. Finally, from each `:Prefix`, it follows the direct relationship to the corresponding `:Country` node to identify the prefix's geographic location.",
+    "cypher": "MATCH (cisco:AS {asn:109})-[:ORIGINATE]-(pfx:Prefix)--(cc:Country) RETURN pfx, cc"
+  },
+  {
+    "intent": "Find the Country nodes from the Prefix nodes that originate from the AS nodes depending on the AS node with asn 109. Return the AS node of the depending AS, the Prefix nodes, and the Country nodes.",
+    "abstract_intent": "Find the prefixes and their associated countries for all Autonomous Systems that depend on a specific AS.",
+    "methodology": "First, the query identifies the specific `:AS` node with `asn` 109. It then traverses backwards along `[:DEPENDS_ON]` relationships to find all `:AS` nodes that depend on it. From these dependent ASes, the query follows `[:ORIGINATE]` relationships to their announced `:Prefix` nodes and then finds the associated `:Country` for each prefix.",
+    "cypher": "MATCH (cisco:AS {asn:109})<-[:DEPENDS_ON]-(customer:AS)-[:ORIGINATE]-(pfx:Prefix)--(cc:Country) RETURN customer, pfx, cc"
+  },
+  {
+    "intent": "Get the geolocation of prefixes announced by ASes depending on AS109. Return the nodes of the depending ASes, prefixes, and countries.",
+    "abstract_intent": "Get the geolocation of prefixes announced by Autonomous Systems that depend on a specific AS.",
+    "methodology": "First, the query anchors on the specified `:AS` node with ASN 109. It then traverses backwards along the `:DEPENDS_ON` relationship to find all `:AS` nodes that depend on it. From each of these dependent ASes, the query follows the `:ORIGINATE` relationship to find the `:Prefix` nodes they announce and subsequently finds the associated `:Country` for each prefix.",
+    "cypher": "MATCH (cisco:AS {asn:109})<-[:DEPENDS_ON]-(customer:AS)-[:ORIGINATE]-(pfx:Prefix)--(cc:Country) RETURN customer, pfx, cc"
+  },
+  {
+    "intent": "Find the ASes that depend on the AS with the asn 109 and the countries in which these ASes originate prefixes. Count the number of distinct depending ASes per country and return the Country's country_code and the count in descending oder.",
+    "abstract_intent": "For a given AS, find the countries where its dependent ASes announce prefixes and count the number of unique dependent ASes per country.",
+    "methodology": "First, the query identifies the target `:AS` node using its `asn`. It then traverses incoming `:DEPENDS_ON` relationships to find all depending `:AS` nodes. From each of these depending ASes, the query follows the `:ORIGINATE` relationship to a `:Prefix` and then to its associated `:Country` node to determine the geographic location of the announced network.",
+    "cypher": "MATCH (cisco:AS {asn:109})<-[dep:DEPENDS_ON]-(customer:AS)-[:ORIGINATE]-(pfx:Prefix)--(cc:Country) RETURN cc.country_code, count(DISTINCT customer) AS nb_dep ORDER BY nb_dep DESC"
+  },
+  {
+    "intent": "Find in which countries ASes depending on AS109 originate prefixes and count the number of ASes per country. Return the results in descending order.",
+    "abstract_intent": "For a given Autonomous System (AS), identify all other ASes that depend on it, find the countries where these dependent ASes originate IP prefixes, and return a count of these dependent ASes per country.",
+    "methodology": "First, the query identifies the target Autonomous System, AS109. It then traverses backwards along `:DEPENDS_ON` relationships to find all `:AS` nodes that depend on it. For each of these dependent ASes, the query follows the `:ORIGINATE` relationship to find their announced `:Prefix` nodes and subsequently the `:Country` associated with each prefix.",
+    "cypher": "MATCH (cisco:AS {asn:109})<-[dep:DEPENDS_ON]-(customer:AS)-[:ORIGINATE]-(pfx:Prefix)--(cc:Country) RETURN cc.country_code, count(DISTINCT customer) AS nb_dep ORDER BY nb_dep DESC"
+  },
+  {
+    "intent": "Find the DomainName nodes that are ranked in the top 10k and have Prefix nodes originating from the AS node with asn 109. Along with the DomainName nodes, also return the Prefix nodes and the IP nodes.",
+    "abstract_intent": "Find the top-ranked DomainNames, along with their associated IP addresses and Prefixes, that are hosted by a specific AS.",
+    "methodology": "First, the query anchors on the specified :AS node using its ASN. It then traverses the undirected :ORIGINATE relationship to find all associated :Prefix nodes. From each :Prefix, it follows the path to :IP nodes, then through the :RESOLVES_TO relationship to a :HostName and its parent :DomainName, finally filtering for domains with a rank less than or equal to 10,000 via the :RANK relationship.",
+    "cypher": "MATCH (n:AS {asn:109})-[:ORIGINATE]-(p:Prefix)--(i:IP)-[:RESOLVES_TO]-(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 10000 RETURN p,i,d"
+  },
+  {
+    "intent": "Get domain names in the top 10k hosted by AS109.",
+    "abstract_intent": "Find all domain names with a rank below a specific threshold that are hosted by a given Autonomous System.",
+    "methodology": "First, the query identifies the specified `:AS` node by its ASN. It then traverses the full DNS resolution path, following the `:ORIGINATE` relationship to `:Prefix` nodes, then through `:IP` and `:HostName` nodes to find the corresponding `:DomainName`. Finally, it filters these domains by their `:RANK` relationship to a `:Ranking` node, keeping only those within the specified rank threshold.",
+    "cypher": "MATCH (n:AS {asn:109})-[:ORIGINATE]-(p:Prefix)--(i:IP)-[:RESOLVES_TO]-(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 10000 RETURN DISTINCT d.name"
+  },
+  {
+    "intent": "Find the DomainName nodes that are ranked in the top 10k and have Prefix nodes originating from or depending on the AS node with asn 109. Along with the DomainName nodes, also return the Prefix nodes and the IP nodes.",
+    "abstract_intent": "Find top-ranked DomainName nodes, along with their associated Prefix and IP nodes, where the infrastructure is connected to a specific AS.",
+    "methodology": "First, the query locates the specified :AS node by its ASN. It then traverses to any connected :Prefix nodes, which implicitly covers both origination and dependency paths. From these prefixes, it follows the reverse DNS resolution path through :IP and :HostName nodes to find the corresponding :DomainName, which is then filtered to include only those with a :RANK relationship value less than or equal to 10,000.",
+    "cypher": "MATCH (n:AS {asn:109})--(p:Prefix)--(i:IP)--(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 10000 RETURN p,i,d"
+  },
+  {
+    "intent": "Get domain names in the top 10k that are related to AS109, including domains that map to prefixes originated by AS109 and prefixes that depend on AS109.",
+    "abstract_intent": "Find top-ranked domain names that resolve to IP prefixes either originated by or dependent on a specific Autonomous System.",
+    "methodology": "First, the query identifies the target :AS node and traverses to all connected :Prefix nodes, which includes prefixes both originated by and dependent on the AS. From these prefixes, it follows the standard DNS resolution path by traversing through :IP and :HostName nodes to find the associated :DomainName. Finally, it filters these domains by checking their :RANK relationship to include only those with a rank of 10,000 or lower.",
+    "cypher": "MATCH (n:AS {asn:109})--(p:Prefix)--(i:IP)--(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 10000 RETURN p,i,d"
+  },
+  {
+    "intent": "Find the AS nodes that are providers of customers of the AS node with asn 8075. Along with these AS nodes, return the corresponding Name nodes, if possible, as specified by the reference_org RIPE NCC and the number of distinct customers. Return the results by descending number of customers.",
+    "abstract_intent": "Find the Autonomous Systems that are providers to the customers of a specific AS. For each of these providers, return their name and a count of the shared customers, ordered by the number of shared customers in descending order.",
+    "methodology": "The query first identifies the target `:AS` node (asn: 8075) and its customers by traversing the `:PEERS_WITH` relationship where the `rel` property is 1. From each of these customer `:AS` nodes, it then traverses another `:PEERS_WITH` relationship (with `rel:1`) to find their providers. Finally, it aggregates these providers, counts their distinct shared customers, and optionally retrieves their associated `:Name` node before ordering the results.",
+    "cypher": "MATCH (comp:AS)-[:PEERS_WITH {rel:1}]->(customer:AS)<-[:PEERS_WITH {rel:1}]-(microsoft:AS {asn:8075}) WITH comp, customer OPTIONAL MATCH (comp)-[:NAME {reference_org:'RIPE NCC'}]-(comp_name:Name) RETURN comp, comp_name, count(DISTINCT customer) AS nb_customer ORDER BY nb_customer DESC"
+  },
+  {
+    "intent": "Get the main competitors of AS8075.",
+    "abstract_intent": "Identify and rank the competitors of a specific Autonomous System based on the number of shared customers.",
+    "methodology": "The query first identifies the target :AS (AS8075) and its customer :AS nodes by traversing provider-to-customer relationships, specified as `[:PEERS_WITH {rel:1}]`. It then finds other provider :AS nodes, labeled as competitors, that share these same customers. Finally, the query counts the number of distinct shared customers for each competitor and sorts them in descending order to determine the main competitors.",
+    "cypher": "MATCH (comp:AS)-[:PEERS_WITH {rel:1}]->(customer:AS)<-[:PEERS_WITH {rel:1}]-(microsoft:AS {asn:8075}) WITH comp, customer OPTIONAL MATCH (comp)-[:NAME {reference_org:'RIPE NCC'}]-(comp_name:Name) RETURN comp, comp_name, count(DISTINCT customer) AS nb_customer ORDER BY nb_customer DESC"
+  },
+  {
+    "intent": "Find DomainName nodes that have a ranking below or equal 10k and names ending in '.us'. Along with the DomainName nodes, return the corresponding IP nodes, Prefix nodes, and AS nodes.",
+    "abstract_intent": "Find the IP addresses, Prefixes, and Autonomous Systems associated with popular domains belonging to a specific top-level domain.",
+    "methodology": "First, the query identifies `:DomainName` nodes by filtering on their name property and their global rank via a `:RANK` relationship. From these domains, it traverses the DNS resolution path through `:HostName` nodes to find the corresponding `:IP` addresses. Finally, it follows the IP-to-prefix mapping to a `:Prefix` node and identifies the originating `:AS` via the `:ORIGINATE` relationship.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.us' AND r.rank <= 10000 RETURN dn, ip, pfx, net"
+  },
+  {
+    "intent": "Retrieve domain name, ip, prefix, and AS nodes for the top 10k United States domains.",
+    "abstract_intent": "Retrieve the full resolution path including domain, IP, prefix, and AS nodes for the top N ranked domains associated with a specific country TLD.",
+    "methodology": "First, the query identifies all `:DomainName` nodes that have a `:RANK` relationship and filters them for a rank less than or equal to 10,000 and a name ending with '.us'. From these domains, it traverses through the associated `:HostName`, `:IP`, and `:Prefix` nodes. Finally, it finds the originating `:AS` for each prefix via the `:ORIGINATE` relationship to complete the resolution path.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.us' AND r.rank <= 10000 RETURN dn, ip, pfx, net"
+  },
+  {
+    "intent": "Find DomainName nodes ranked in the top 100k and with name ending with '.us' together with their corresponding AS. If possible, find the names of ASes specified by reference_org RIPE NCC. Return the AS' asn, name and the number of distinct domain names. Order the results by descending number of domains.",
+    "abstract_intent": "Find the Autonomous Systems that host the most domains for a specific TLD within a given rank threshold, and retrieve their names from a specific reference organization.",
+    "methodology": "First, the query identifies :DomainName nodes that have a :RANK relationship with a rank less than or equal to 100,000 and whose name ends with '.us'. It then traverses the full DNS resolution path from these domains through :HostName, :IP, and :Prefix nodes to the originating :AS via the :ORIGINATE relationship. Finally, it counts the distinct domains for each AS and optionally fetches the AS name from a :Name node with a specific reference organization.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.us' AND r.rank <= 100000 WITH net, dn  OPTIONAL MATCH (net:AS)-[:NAME {reference_org:'RIPE NCC'}]-(net_name:Name) RETURN net.asn, net_name.name, count(DISTINCT dn) AS nb_domain_name ORDER BY nb_domain_name DESC"
+  },
+  {
+    "intent": "Count the number of United States domains ranked in the top 100k by AS and, if possible, give the AS name specified by RIPE NCC. Return the ASN, AS name and count of domain names in descending order.",
+    "abstract_intent": "Count the number of domains with a specific TLD, ranked within a certain threshold, grouped by their hosting Autonomous System. Return the ASN, an optional AS name from a specified source, and the domain count, sorted in descending order.",
+    "methodology": "First, the query identifies `:DomainName` nodes that end with '.us' and have a rank of 100,000 or less by checking the `:RANK` relationship to a `:Ranking` node. It then traverses the full resolution path from the `:DomainName` through `:HostName`, `:IP`, and `:Prefix` to find the originating `:AS` via the `:ORIGINATE` relationship. Finally, it groups by each unique `:AS`, counts the distinct domains, and optionally fetches the AS name from the 'RIPE NCC' source to return the sorted results.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(dn:DomainName)--(:HostName)--(ip:IP)--(pfx:Prefix)-[:ORIGINATE]-(net:AS) WHERE dn.name ENDS WITH '.us' AND r.rank <= 100000 WITH net, dn  OPTIONAL MATCH (net:AS)-[:NAME {reference_org:'RIPE NCC'}]-(net_name:Name) RETURN net.asn, net_name.name, count(DISTINCT dn) AS nb_domain_name ORDER BY nb_domain_name DESC"
+  },
+  {
+    "intent": "Find all nodes that are connected to the Name node with a name containing the word 'osaka'.",
+    "abstract_intent": "Find all nodes connected to a `:Name` node where the name property contains a specific substring.",
+    "methodology": "First, the query locates all `:Name` nodes whose `name` property contains the specified substring, performing a case-insensitive search. It then traverses any relationship connected to these `:Name` nodes to find all directly adjacent nodes. Finally, it returns these neighboring nodes.",
+    "cypher": "MATCH (x)--(n:Name) WHERE toLower(n.name) CONTAINS 'osaka' RETURN x"
+  },
+  {
+    "intent": "Find all nodes that have the word 'osaka' in their name.",
+    "abstract_intent": "Find all nodes whose name contains a specific keyword.",
+    "methodology": "First, the query identifies all nodes with the `:Name` label. It then filters these nodes by checking if their `name` property contains a specific substring in a case-insensitive manner. Finally, for each matching `:Name` node, the query traverses its relationship to find the associated node `(x)` and returns that node.",
+    "cypher": "MATCH (x)--(n:Name) WHERE toLower(n.name) CONTAINS 'osaka' RETURN x"
+  },
+  {
+    "intent": "Find the DomainName nodes that are ranked in the top 1k and have Prefix nodes originating from the AS node with asn 109. Along with the DomainName nodes, also return the Prefix nodes and the IP nodes.",
+    "abstract_intent": "Find the top-ranked DomainName, IP, and Prefix nodes that are associated with a specific Autonomous System (AS).",
+    "methodology": "The query starts by locating the specified `:AS` node using its ASN. It then traverses the `:ORIGINATE` relationship to find all connected `:Prefix` nodes. From these prefixes, it follows the resolution path through `:IP` and `:HostName` nodes to identify the final `:DomainName` nodes, filtering them to only include those with a `:RANK` relationship property less than or equal to 1000.",
+    "cypher": "MATCH (n:AS {asn:109})-[:ORIGINATE]-(p:Prefix)--(i:IP)--(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 1000 RETURN p,i,d"
+  },
+  {
+    "intent": "Get domain names in the top 1k that are hosted by AS109.",
+    "abstract_intent": "Get top-ranked domain names that are hosted by a specific Autonomous System.",
+    "methodology": "First, locate the specified `:AS` node by its ASN. From there, traverse the `[:ORIGINATE]` relationship to find all associated `:Prefix` nodes. Finally, follow the resolution path from each `:Prefix` through its `:IP` and `:HostName` to identify the corresponding `:DomainName`, filtering them by their `[:RANK]` relationship to keep only those within the top 1000.",
+    "cypher": "MATCH (n:AS {asn:109})-[:ORIGINATE]-(p:Prefix)--(i:IP)--(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 1000 RETURN p,i,d"
+  },
+  {
+    "intent": "Find the DomainName nodes that are ranked in the top 1k and have Prefix nodes depending on the AS node with asn 109. Along with the DomainName nodes, also return the Prefix nodes and the IP nodes.",
+    "abstract_intent": "Find top-ranked DomainName nodes, along with their associated Prefix and IP nodes, where the prefixes have a dependency relationship with a specific Autonomous System.",
+    "methodology": "First, the query identifies the specified `:AS` node by its ASN. It then traverses the `[:DEPENDS_ON]` relationship to find all `:Prefix` nodes that depend on it. From these prefixes, the query follows the standard resolution path through `:IP` and `:HostName` nodes to find the associated `:DomainName` nodes, finally filtering them by their `[:RANK]` relationship to include only those in the top 1000.",
+    "cypher": "MATCH (n:AS {asn:109})-[:DEPENDS_ON]-(p:Prefix)--(i:IP)--(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 1000 RETURN p,i,d"
+  },
+  {
+    "intent": "Get domain names in the top 1k that depend on AS109.",
+    "abstract_intent": "Find top N ranked domain names that have a dependency on a specific Autonomous System.",
+    "methodology": "First, the query starts at the specified `:AS` node (AS109). It then traverses the `:DEPENDS_ON` relationship to find any `:Prefix` nodes that rely on it. From those prefixes, it follows the infrastructure path through `:IP` and `:HostName` nodes to find the corresponding `:DomainName`, and finally filters these domains by their `[:RANK]` relationship to include only those in the top 1000.",
+    "cypher": "MATCH (n:AS {asn:109})-[:DEPENDS_ON]-(p:Prefix)--(i:IP)--(:HostName)--(d:DomainName)-[r:RANK]-(:Ranking) WHERE r.rank <= 1000 RETURN p,i,d"
+  },
+  {
+    "intent": "Find AS nodes that map to the same OpaqueID as the AS node with asn 15735. For these ASes find the originated prefixes containing IPs that resolve to HostName nodes which map to DomainName nodes that are ranked in the top 10k. If possible, also find the names of these ASes as specified by the reference_org RIPE NCC. Return the AS, Prefix, IP, DomainName, and AS name nodes",
+    "abstract_intent": "Find ASes that share the same OpaqueID as a given AS. For these related ASes, identify the network infrastructure (prefixes, IPs) they use to host any top-ranked DomainNames. Also, retrieve the names of these hosting ASes from a specific source.",
+    "methodology": "The query first finds all `:AS` nodes that share a common `:OpaqueID` with a given input AS. It then traverses from these related ASes through their originated `:Prefix` nodes, to the `:IP` addresses within them, and on to the `:HostName` and `:DomainName` nodes. The final results are filtered to include only those domains with a `[:RANK]` relationship to a `:Ranking` node indicating a top 10k rank, while also optionally retrieving the AS name.",
+    "cypher": "MATCH (oida:AS {asn: 15735})--(oid:OpaqueID)--(net:AS)--(pfx:Prefix)--(ip:IP)--(:HostName)--(dname:DomainName)-[r]-(:Ranking) OPTIONAL MATCH (net)-[:NAME {reference_org:'RIPE NCC'}]-(asname:Name) WHERE r.rank <= 10000 AND oida <> net RETURN net, pfx, ip, dname, asname"
+  },
+  {
+    "intent": "Get domain names ranked in the top 10k that are hosted by ASes that map to the same opaque ID as AS15735. If possible, find the AS names as specified by RIPE NCC. Return the AS, prefix, ip, domain name, and AS name nodes.",
+    "abstract_intent": "Find highly-ranked domain names hosted by ASes that share a common OpaqueID with a specific source AS, and retrieve their names from a designated organization.",
+    "methodology": "First, the query locates the specified source `:AS` (AS15735) and finds its associated `:OpaqueID`. It then identifies all other `:AS` nodes connected to that same `:OpaqueID`. Finally, for each of these related ASes, it traverses backwards from the `:AS` through `:Prefix`, `:IP`, and `:HostName` to find the corresponding `:DomainName` nodes, filtering for those with a rank of 10,000 or less.",
+    "cypher": "MATCH (oida:AS {asn: 15735})--(oid:OpaqueID)--(net:AS)--(pfx:Prefix)--(ip:IP)--(:HostName)--(dname:DomainName)-[r]-(:Ranking) OPTIONAL MATCH (net)-[:NAME {reference_org:'RIPE NCC'}]-(asname:Name) WHERE r.rank <= 10000 AND oida <> net RETURN net, pfx, ip, dname, asname"
+  },
+  {
+    "intent": "Find AS nodes that map to the same OpaqueID as the AS node with asn 15735 and get the Prefix nodes originated by these ASes with the Country nodes of the prefixes. If possible, get the Name node for the AS as specified by reference_org RIPE NCC. Return AS, Prefix, Name, Country, and OpaqueID nodes for prefixes not located in the Country with country_code 'MT'.",
+    "abstract_intent": "Find all ASes that share an OpaqueID with a given AS. For these related ASes, retrieve their originated Prefixes, the Country of each prefix, and the AS Name from a specific source. Exclude any results where the prefix is located in a specified country.",
+    "methodology": "First, the query locates the specified `:AS` node and traverses to its connected `:OpaqueID`. From this shared identifier, it finds all other `:AS` nodes and then follows the path to the `:Prefix` nodes they originate and the `:Country` where each prefix is located. Finally, it filters out prefixes from a specific country and optionally retrieves the `:Name` for each AS before returning the results.",
+    "cypher": "MATCH (:AS {asn:15735})--(oid:OpaqueID)--(net:AS)--(pfx:Prefix)--(cc:Country) OPTIONAL MATCH (net)-[:NAME {reference_org:'RIPE NCC'}]-(asname:Name) WHERE net.asn<>15735 AND cc.country_code <> 'MT' RETURN net, pfx, asname, cc, oid"
+  },
+  {
+    "intent": "Find the prefixes that are not located in Malta and are originated by ASes mapping to the same opaque ID as AS15735. If possible, get the AS names as specified by RIPE NCC. Return the AS, prefix, name, conutry, and opaque ID nodes.",
+    "abstract_intent": "Find prefixes originated by Autonomous Systems that share the same OpaqueID as a given AS, excluding prefixes from a specific country, and retrieve the AS names from a particular data source.",
+    "methodology": "First, the query identifies the `:OpaqueID` associated with the input `:AS` (AS15735). It then finds all other `:AS` nodes sharing this same `:OpaqueID`. Finally, for these related ASes, it retrieves their originated `:Prefix` nodes and the `:Country` they are located in, filtering out any prefixes located in the specified country (Malta) and optionally matching the AS name from the 'RIPE NCC' source.",
+    "cypher": "MATCH (:AS {asn:15735})--(oid:OpaqueID)--(net:AS)--(pfx:Prefix)--(cc:Country) OPTIONAL MATCH (net)-[:NAME {reference_org:'RIPE NCC'}]-(asname:Name) WHERE net.asn<>15735 AND cc.country_code <> 'MT' RETURN net, pfx, asname, cc, oid"
+  },
+  {
+    "intent": "Find all the IXP nodes that are connected with AS nodes that map to the same OpaqueID as the AS nodes with asn 6799. Also return the AS nodes.",
+    "abstract_intent": "Find all AS and IXP nodes that are connected to AS nodes sharing the same OpaqueID as a given AS number.",
+    "methodology": "First, the query locates the starting `:AS` node with the specified ASN. It then traverses to a connected `:OpaqueID` node, which acts as a shared identifier. From this `:OpaqueID`, the query finds all other `:AS` nodes that are also connected to it, and finally traverses from those ASes to any connected `:IXP` nodes.",
+    "cypher": "MATCH (:AS {asn: 6799})--(oid:OpaqueID)--(n:AS)--(ix:IXP) RETURN n, ix"
+  },
+  {
+    "intent": "Find IXP nodes connected to ASes that map to the same opaque ID as AS6799. Return the IXP and AS nodes.",
+    "abstract_intent": "Find all Internet Exchange Points (IXPs) connected to Autonomous Systems (ASes) that share the same Opaque ID as a given AS.",
+    "methodology": "First, the query locates the starting :AS node for the specified ASN and traverses to its associated :OpaqueID node. From this :OpaqueID, it finds all other :AS nodes that share this identifier. Finally, it traverses from these ASes to any connected :IXP nodes to find the Internet Exchange Points they are members of.",
+    "cypher": "MATCH (:AS {asn: 6799})--(oid:OpaqueID)--(n:AS)--(ix:IXP) RETURN n, ix"
+  },
+  {
+    "intent": "Find all the Country nodes of the IXP nodes that are connected with AS node with asn 6799. Return the IXP and Country nodes.",
+    "abstract_intent": "For a given Autonomous System Number (ASN), find all the Internet Exchange Points (IXPs) it is connected to and the countries where those IXPs are located.",
+    "methodology": "First, the query locates the specific :AS node with the property asn equal to 6799. From this starting node, it traverses the graph to find all directly connected :IXP nodes. Finally, from each of those :IXP nodes, it follows the relationship to the associated :Country node.",
+    "cypher": "MATCH (n:AS {asn:6799})--(ix:IXP)--(cc:Country) RETURN ix,cc"
+  },
+  {
+    "intent": "Get the countries of IXPs of which AS6799 is a member of. Return the IXP and country nodes.",
+    "abstract_intent": "Find the countries associated with the Internet Exchange Points (IXPs) that a specific AS is a member of.",
+    "methodology": "The query first identifies the starting `:AS` node with the ASN 6799. It then traverses the graph to find all directly connected `:IXP` nodes, which represent the Internet Exchange Points the AS is a member of. Finally, from each of those `:IXP` nodes, it follows the relationship to the corresponding `:Country` node to find its location.",
+    "cypher": "MATCH (n:AS {asn:6799})--(ix:IXP)--(cc:Country) RETURN ix,cc"
+  },
+  {
+    "intent": "Find DomainName nodes with name ending in '.mt' that are ranked in the top 10k. Find the Country nodes as specified by reference_org NRO of ASes that originate Prefixes that host these DomainNames. Return the number of distinct DomainNames per country in descending order.",
+    "abstract_intent": "Find the registration countries of Autonomous Systems that host highly-ranked domain names ending with a specific TLD, and count how many of these domains are hosted per country.",
+    "methodology": "First, the query identifies all `:DomainName` nodes that have a `:RANK` relationship with a rank property of 10,000 or less and whose name ends with '.mt'. It then traverses the infrastructure path from these domains through `:HostName`, `:IP`, and `:Prefix` nodes to find the originating `:AS` via the `:ORIGINATE` relationship. Finally, it finds the registration country of each `:AS` by following the `:COUNTRY` relationship where the `reference_org` is 'NRO', and then counts the distinct domains for each country.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(domain:DomainName)--(:HostName)--(:IP)--(:Prefix)-[:ORIGINATE]-(:AS)-[:COUNTRY {reference_org:'NRO'}]-(cc:Country) WHERE r.rank <= 10000 AND domain.name ENDS WITH '.mt' RETURN cc.country_code, count(DISTINCT domain.name) AS dm_count ORDER BY dm_count DESC"
+  },
+  {
+    "intent": "Get the country registration of ASes hosting Maltese domain names in the top 10k. Return the number of domains per country in descending order.",
+    "abstract_intent": "Get the registration countries of ASes that host domains of a specific TLD within a given rank threshold, and return a count of unique domains per country.",
+    "methodology": "The query first identifies `:DomainName` nodes that are within a specified rank via a `:RANK` relationship and end with a specific TLD. It then traverses the full DNS resolution path from `:DomainName` through `:HostName`, `:IP`, and `:Prefix` to find the hosting `:AS` via an `:ORIGINATE` relationship. Finally, it follows the `:COUNTRY` relationship from the `:AS` to its registration `:Country` node to count the distinct domains per country.",
+    "cypher": "MATCH (:Ranking)-[r:RANK]-(domain:DomainName)--(:HostName)--(:IP)--(:Prefix)-[:ORIGINATE]-(:AS)-[:COUNTRY {reference_org:'NRO'}]-(cc:Country) WHERE r.rank <= 10000 AND domain.name ENDS WITH '.mt' RETURN cc.country_code, count(DISTINCT domain.name) AS dm_count ORDER BY dm_count DESC"
+  },
+  {
+    "intent": "Find the total number of distinct AS in the Country with country_code 'US' as specified by the reference_org NRO.",
+    "abstract_intent": "Count the number of unique Autonomous Systems registered in a specific country, according to a given reference organization.",
+    "methodology": "The query first locates the `:Country` node with the `country_code` 'US'. It then traverses the `:COUNTRY` relationship, filtering for connections where the `reference_org` property is 'NRO', to find all associated `:AS` nodes. Finally, it counts the number of distinct `:AS` nodes that match this registration criterion.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'NRO'}]-(:Country {country_code:'US'}) RETURN COUNT(DISTINCT a)"
+  },
+  {
+    "intent": "Get the number of ASes registered in the United States.",
+    "abstract_intent": "Count the number of Autonomous Systems registered in a given country.",
+    "methodology": "The query first finds the `:Country` node for the United States using its `country_code` 'US'. It then traverses the `:COUNTRY` relationship to find all connected `:AS` nodes, filtering for relationships where the `reference_org` is 'NRO' to ensure it's the official registration country. Finally, it returns the total count of the distinct `:AS` nodes found.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'NRO'}]-(:Country {country_code:'US'}) RETURN COUNT(DISTINCT a)"
+  },
+  {
+    "intent": "Find the AS nodes associated with the country code 'US' through the COUNTRY relationship using the reference organization 'RIPE NCC'. Match these AS nodes to Ranking nodes with a rank below 10 according to the 'ihr.country_dependency' reference. Optionally, match the AS nodes with their corresponding Name nodes using the 'BGP.Tools' reference. Return the ASNs, their corresponding AS names, and a collection of the ranking names, ordered by ASN.",
+    "abstract_intent": "Find the top-ranked Autonomous Systems (ASes) in a specific country based on a given dependency ranking. For these ASes, retrieve their names from a specified source and list their AS numbers, names, and associated ranking names.",
+    "methodology": "First, the query identifies `:AS` nodes connected to a `:Country` node for 'US' via a `:COUNTRY` relationship, filtering for the 'RIPE NCC' source. It then filters these ASes by traversing their `:RANK` relationship to a `:Ranking` node, keeping only those with a rank below 10 from the 'ihr.country_dependency' reference. Finally, it optionally traverses from the filtered `:AS` nodes to their `:Name` nodes via a `:NAME` relationship to retrieve their names.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'RIPE NCC'}]-(:Country {country_code:'US'}) MATCH (a)-[ra:RANK {reference_name:'ihr.country_dependency'}]->(r:Ranking)--(:Country {country_code:'US'}) WHERE ra.rank < 10 OPTIONAL MATCH (a)-[:NAME {reference_org:\"BGP.Tools\"}]-(n:Name) RETURN DISTINCT a.asn as ASN, n.name AS AS_Name, COLLECT(r.name) as Rankings ORDER BY a.asn"
+  },
+  {
+    "intent": "Find ASes located in the United States as specified by RIPE NCC that are in the top 9 of the US country dependency ranking. If possible find the AS names specified by BGP.Tools and return the ASN, AS name and ranking names ordered by ASN.",
+    "abstract_intent": "Find the top N ASes in a specific country based on a country-level dependency ranking, and retrieve their names from a specified data source.",
+    "methodology": "First, the query identifies `:AS` nodes connected to a `:Country` node for the United States via a `:COUNTRY` relationship sourced from 'RIPE NCC'. It then filters these ASes by traversing a `:RANK` relationship to a `:Ranking` node, selecting only those with a rank less than 10. Finally, it optionally traverses the `:NAME` relationship to retrieve the AS name from 'BGP.Tools' and returns the relevant details.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'RIPE NCC'}]-(:Country {country_code:'US'}) MATCH (a)-[ra:RANK {reference_name:'ihr.country_dependency'}]->(r:Ranking)--(:Country {country_code:'US'}) WHERE ra.rank < 10 OPTIONAL MATCH (a)-[:NAME {reference_org:\"BGP.Tools\"}]-(n:Name) RETURN DISTINCT a.asn as ASN, n.name AS AS_Name, COLLECT(r.name) as Rankings ORDER BY a.asn"
+  },
+  {
+    "intent": "Find the AS nodes associated with the country code 'US' through the COUNTRY relationship using the reference organization 'RIPE NCC'. Match these AS nodes to Ranking relationships with a rank below 10 according to the 'ihr.country_dependency' reference. Optionally, match the AS nodes to other AS nodes with which they have a PEERS_WITH relationship (with 'rel' equal to 1) and a DEPENDS_ON relationship (with 'hege' greater than 0.03). Ensure the AS nodes are different from each other. Return the AS nodes, the DEPENDS_ON relationships, and the peer AS nodes.",
+    "abstract_intent": "Find the top-ranked ASes in a given country and identify their critical upstream providers, where a provider is defined as an AS connected by both a provider-customer peering relationship and a high-hegemony dependency link.",
+    "methodology": "First, the query identifies `:AS` nodes linked to a specific `:Country` via a `:COUNTRY` relationship with a specified `reference_org`. It then filters these ASes by matching them to a `:RANK` relationship with a rank below a certain threshold. Finally, it optionally finds other `:AS` nodes connected by both a `:PEERS_WITH` relationship (provider-to-customer) and a `:DEPENDS_ON` relationship with a high hegemony score.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'RIPE NCC'}]-(:Country {country_code:'US'}) MATCH (a)-[ra:RANK {reference_name:'ihr.country_dependency'}]->(:Ranking) WHERE ra.rank < 10 OPTIONAL MATCH (a)-[p:PEERS_WITH]-(b), (a)-[d:DEPENDS_ON]->(b) WHERE p.rel = 1 AND d.hege > 0.03 AND a<>b RETURN a, d, b"
+  },
+  {
+    "intent": "Find ASes located in the United States as specified by RIPE NCC that are in the top 9 of the US country dependency ranking. If possible find customer ASes that have a dependency of more than 0.03 and return the AS and dependency relationship nodes.",
+    "abstract_intent": "Find the top-ranked ASes in a given country based on a specific dependency ranking, and for those ASes, identify their customer ASes that have a dependency score greater than a specified threshold.",
+    "methodology": "First, the query identifies `:AS` nodes registered in a specific country by matching a `:COUNTRY` relationship with a specific `reference_org`. It then filters these ASes by traversing a `:RANK` relationship to select only those within the top rank threshold. Finally, it optionally finds customer ASes by matching both a `:PEERS_WITH` relationship indicating a provider-to-customer link and a `:DEPENDS_ON` relationship with a hegemony score above a specified value.",
+    "cypher": "MATCH (a:AS)-[:COUNTRY {reference_org:'RIPE NCC'}]-(:Country {country_code:'US'}) MATCH (a)-[ra:RANK {reference_name:'ihr.country_dependency'}]->(:Ranking) WHERE ra.rank < 10 OPTIONAL MATCH (a)-[p:PEERS_WITH]-(b), (a)-[d:DEPENDS_ON]->(b) WHERE p.rel = 1 AND d.hege > 0.03 AND a<>b RETURN a, d, b"
+  },
+  {
+    "intent": "Find the AS nodes associated with the country code 'US' through the COUNTRY relationship using the reference organization 'RIPE NCC'. Match these AS nodes to Ranking relationships with a rank of 10 or below according to the 'ihr.country_dependency' reference. Optionally, match the AS nodes to IXP nodes through the MEMBER_OF relationship, ensuring these IXP nodes are also associated with the country code 'US'. Return the AS nodes, the MEMBER_OF relationships, and the IXP nodes.",
+    "abstract_intent": "Find the top-ranked Autonomous Systems in a given country, based on a specific ranking, and identify the in-country Internet Exchange Points (IXPs) where they are members.",
+    "methodology": "First, the query identifies all :AS nodes registered in a specific country by matching them to a :Country node via the :COUNTRY relationship, filtering by a specific reference organization. It then filters these ASes to include only those with a :RANK relationship indicating a rank below a certain threshold. Finally, it optionally finds any :IXP nodes located in the same country where these top-ranked ASes are present by traversing the :MEMBER_OF relationship.",
+    "cypher": "MATCH (a)-[:COUNTRY {reference_org:'RIPE NCC'}]-(:Country {country_code:'US'}) MATCH (a:AS)-[ra:RANK {reference_name:'ihr.country_dependency'}]->(:Ranking) WHERE ra.rank <= 10 OPTIONAL MATCH (a)-[m:MEMBER_OF]-(ix:IXP)-[:COUNTRY]-(:Country {country_code:'US'}) RETURN a, m, ix"
+  },
+  {
+    "intent": "Find ASes located in the United States as specified by RIPE NCC that are in the top 10 of the US country dependency ranking. If possible find IXPs in the US where these ASes are members. Return the AS and IXP nodes and the member relationship.",
+    "abstract_intent": "Find the top N ASes in a given country based on a specific ranking, and identify their memberships in IXPs located within that same country.",
+    "methodology": "First, the query identifies `:AS` nodes registered in a specific country by matching a `:COUNTRY` relationship with a `reference_org` of 'RIPE NCC'. It then filters these ASes by traversing the `:RANK` relationship to select only those with a rank of 10 or less in the country dependency ranking. Finally, it optionally finds any `:IXP` nodes in the same country that these top ASes are connected to via a `:MEMBER_OF` relationship.",
+    "cypher": "MATCH (a)-[:COUNTRY {reference_org:'RIPE NCC'}]-(:Country {country_code:'US'}) MATCH (a:AS)-[ra:RANK {reference_name:'ihr.country_dependency'}]->(:Ranking) WHERE ra.rank <= 10 OPTIONAL MATCH (a)-[m:MEMBER_OF]-(ix:IXP)-[:COUNTRY]-(:Country {country_code:'US'}) RETURN a, m, ix"
+  },
+  {
+    "intent": "Find the DomainName nodes that are ranked in the 'Tranco top 1M' ranking. These DomainName nodes should have been queried more than 30 times from the country with the country code 'US'. Return the domain names, their ranks, and the number of queries from the US, ordered by rank.",
+    "abstract_intent": "Find domain names from a specific ranking that are queried more than a certain number of times from a given country, and return their names, ranks, and query counts.",
+    "methodology": "The query starts by finding the specific `:Ranking` node for 'Tranco top 1M'. It then traverses the `:RANK` relationship to identify all associated `:DomainName` nodes. Finally, it follows the `:QUERIED_FROM` relationship from each `:DomainName` to a `:Country` node, filtering for a specific country code and a query value above a certain threshold.",
+    "cypher": "MATCH (:Ranking {name: 'Tranco top 1M'})-[ra:RANK]-(dn:DomainName)-[q:QUERIED_FROM]-(c:Country) WHERE q.value > 30 AND c.country_code = 'US' RETURN dn.name as domain_name, ra.rank as rank, q.value as per_query_US ORDER BY rank"
+  },
+  {
+    "intent": "Get domain names in the Tranco top 1M list that where queried more than 30 times from the United States and return their name, rank, and number of queries ordered by rank.",
+    "abstract_intent": "Find domain names from a specific ranking list that are queried more than a certain threshold from a specific country, and return their details.",
+    "methodology": "The query initiates by locating the `:Ranking` node named 'Tranco top 1M'. It then traverses the `:RANK` relationship to find all associated `:DomainName` nodes. Finally, it follows the `:QUERIED_FROM` relationship from each domain to a `:Country` node, filtering for paths where the country is the 'US' and the query value on the relationship exceeds 30.",
+    "cypher": "MATCH (:Ranking {name: 'Tranco top 1M'})-[ra:RANK]-(dn:DomainName)-[q:QUERIED_FROM]-(c:Country) WHERE q.value > 30 AND c.country_code = 'US' RETURN dn.name as domain_name, ra.rank as rank, q.value as per_query_US ORDER BY rank"
+  },
+  {
+    "intent": "Find the path for the DomainName node with the name 'yahoo.com'. This path includes connections to HostName, IP, Prefix nodes, and an ORIGINATE relationship (with 'BGPKIT' as the reference organization) to an AS node. Return the entire path.",
+    "abstract_intent": "Find the full infrastructure path for a specific domain name, from the domain itself to the Autonomous System that originates its IP prefixes.",
+    "methodology": "The query first identifies the `:DomainName` node for 'yahoo.com'. It then traces the full resolution path by traversing from the `:DomainName` to a `:HostName`, then to an `:IP` address, and on to its containing `:Prefix` via a `[:PART_OF]` relationship. The path is completed by following the `[:ORIGINATE]` relationship from the `:Prefix` to the `:AS` that announces it.",
+    "cypher": "MATCH p = (dn:DomainName)--(:HostName)--(:IP)-[:PART_OF]-(:Prefix)-[:ORIGINATE {reference_org:'BGPKIT'}]-(a:AS) WHERE dn.name = 'yahoo.com' RETURN p"
+  },
+  {
+    "intent": "Get a graph of IP addresses, prefixes, and ASNs related to yahoo.com.",
+    "abstract_intent": "Get a graph of IP addresses, prefixes, and ASNs related to a specific domain name.",
+    "methodology": "The query first locates the `:DomainName` node for the specified domain. It then traverses the full resolution path by finding the associated `:HostName`, which connects to an `:IP` node. Finally, it identifies the containing `:Prefix` for that IP and the originating `:AS` through the `[:ORIGINATE]` relationship, returning the complete path.",
+    "cypher": "MATCH p = (dn:DomainName)--(:HostName)--(:IP)-[:PART_OF]-(:Prefix)-[:ORIGINATE {reference_org:'BGPKIT'}]-(a:AS) WHERE dn.name = 'yahoo.com' RETURN p"
+  },
+  {
+    "intent": "Find the DomainName nodes that are ranked in the 'Tranco top 1M' ranking with a rank below or equal 10,000. These DomainName nodes should have been queried more than 30 times from the country with the country code 'LU'. Match these DomainName nodes to HostName nodes that resolve to IP nodes, which are part of Prefix nodes, originating from AS nodes. Return a path connecting the DomainName,HostName, IP, Prefix, and AS nodes.",
+    "abstract_intent": "Find the full infrastructure resolution path, from domain to hosting AS, for top-ranked domains that are frequently queried from a specific country.",
+    "methodology": "First, the query identifies `:DomainName` nodes by filtering on two conditions: their rank in the 'Tranco top 1M' `:Ranking` via the `[:RANK]` relationship and their query volume from a specific `:Country` via the `[:QUERIED_FROM]` relationship. Then, for each qualifying `:DomainName`, it traverses the full resolution path from `:HostName` through `:IP` and `:Prefix` to the originating `:AS` using `[:PART_OF]`, `[:RESOLVES_TO]`, and `[:ORIGINATE]` relationships, returning the entire path.",
+    "cypher": "MATCH (:Ranking {name: 'Tranco top 1M'})-[ra:RANK]-(dn:DomainName)-[q:QUERIED_FROM]-(c:Country) WHERE q.value > 30 AND c.country_code = 'LU' AND ra.rank <= 10000 MATCH path = (dn)--(:HostName)-[r:RESOLVES_TO]-(ip:IP)-[p:PART_OF]-(pfx:Prefix)-[o:ORIGINATE]-(net:AS) RETURN path"
+  },
+  {
+    "intent": "Show a domain-to-AS graph for domains in the top 10k of the Tranco top 1M list that were queried more than 30 times from Luxembourg.",
+    "abstract_intent": "Display the full resolution path from domain to hosting AS for domains that are within a specified popularity rank and are frequently queried from a specific country.",
+    "methodology": "First, the query identifies popular domains by starting at the ':Ranking' node for 'Tranco top 1M', traversing the ':RANK' relationship to ':DomainName' nodes, and filtering for a rank within the top 10,000. It then filters these domains by following the ':QUERIED_FROM' relationship to a specific ':Country' and checking the query volume. Finally, for each qualifying domain, it traces the full resolution path through ':HostName', ':IP', and ':Prefix' nodes to find the hosting ':AS' via the ':ORIGINATE' relationship.",
+    "cypher": "MATCH (:Ranking {name: 'Tranco top 1M'})-[ra:RANK]-(dn:DomainName)-[q:QUERIED_FROM]-(c:Country) WHERE q.value > 30 AND c.country_code = 'LU' AND ra.rank <= 10000 MATCH path = (dn)--(:HostName)-[r:RESOLVES_TO]-(ip:IP)-[p:PART_OF]-(pfx:Prefix)-[o:ORIGINATE]-(net:AS) RETURN path"
+  },
+  {
+    "intent": "Find the DomainName nodes that are ranked in the 'Tranco top 1M' ranking with a rank below or equal 10,000. These DomainName nodes should have been queried more than 30 times from the country with the country code 'LU'. Match these DomainName nodes to AuthoritativeNameServer nodes through the MANAGED_BY relationship, which resolve to IP nodes. These IP nodes should be part of Prefix nodes that originate from AS nodes with 'BGPKIT' as the reference organization. Return for each domain name, the number of distinct AS nodes, and a collection of the distinct ASNs, ordered by the number of AS nodes in descending order.",
+    "abstract_intent": "For highly-ranked domains that are frequently queried from a specific country, count the number of distinct Autonomous Systems that host their authoritative nameservers.",
+    "methodology": "First, the query identifies `:DomainName` nodes by matching them to the 'Tranco top 1M' `:Ranking` and filtering by rank, while also filtering for domains queried from a specific `:Country`. For these domains, it traverses the DNS resolution path from `:DomainName` to `:AuthoritativeNameServer` via `:MANAGED_BY`, then to `:IP` via `:RESOLVES_TO`, to `:Prefix` via `:PART_OF`, and finally to the originating `:AS` via `:ORIGINATE`. The final step aggregates the results to count the distinct ASes per domain.",
+    "cypher": "MATCH (:Ranking {name: 'Tranco top 1M'})-[ra:RANK]-(dn:DomainName)-[q:QUERIED_FROM]-(c:Country) WHERE q.value > 30 AND c.country_code = 'LU' AND ra.rank <= 10000 MATCH (dn)-[:MANAGED_BY]-(:AuthoritativeNameServer)-[:RESOLVES_TO]-(:IP)-[:PART_OF]-(:Prefix)-[:ORIGINATE {reference_org:'BGPKIT'}]-(a:AS) RETURN dn.name, count(DISTINCT a) AS nb_asn, COLLECT(distinct a.asn) ORDER BY nb_asn DESC"
+  },
+  {
+    "intent": "Find domain names in the top 10k of the Tranco top 1M list that were queried more than 30 times from Luxembourg. Then find the ASes that host the name servers which manage these domains. Return for each domain the number of ASes as well as a set of the ASNs, order by descending number of ASes.",
+    "abstract_intent": "For top-ranked domains that are frequently queried from a specific country, identify and count the distinct Autonomous Systems that host their authoritative name servers.",
+    "methodology": "First, the query identifies popular :DomainName nodes by filtering on their connection to the 'Tranco top 1M' :Ranking via a :RANK relationship and to a specific :Country via a :QUERIED_FROM relationship. For each resulting domain, it then traverses the DNS infrastructure path from the :DomainName through :MANAGED_BY to an :AuthoritativeNameServer. Finally, it follows the resolution path from the nameserver via :RESOLVES_TO to an :IP, :PART_OF to a :Prefix, and :ORIGINATE to the hosting :AS to count the distinct hosting networks.",
+    "cypher": "MATCH (:Ranking {name: 'Tranco top 1M'})-[ra:RANK]-(dn:DomainName)-[q:QUERIED_FROM]-(c:Country) WHERE q.value > 30 AND c.country_code = 'LU' AND ra.rank <= 10000 MATCH (dn)-[:MANAGED_BY]-(:AuthoritativeNameServer)-[:RESOLVES_TO]-(:IP)-[:PART_OF]-(:Prefix)-[:ORIGINATE {reference_org:'BGPKIT'}]-(a:AS) RETURN dn.name, count(DISTINCT a) AS nb_asn, COLLECT(distinct a.asn) ORDER BY nb_asn DESC"
+  },
+  {
+    "intent": "Find the path for the DomainName node with the name 'google.com'. This path includes connections to AuthoritativeNameServer nodes through the MANAGED_BY relationship, which resolve to IP nodes. These IP nodes are part of Prefix nodes that originate from AS nodes with 'BGPKIT' as the reference organization. Return the entire path.",
+    "abstract_intent": "Find the full infrastructure path for a specific DomainName's authoritative nameservers, including the nameservers themselves, their IP addresses, the IP prefixes they belong to, and the Autonomous Systems that originate those prefixes according to a specific data provider.",
+    "methodology": "First, the query identifies the starting `:DomainName` node by its name property. It then traverses the graph by following the `[:MANAGED_BY]` relationship to find `:AuthoritativeNameServer` nodes, which are then traced to `:IP` nodes via the `[:RESOLVES_TO]` relationship. Finally, the path is completed by linking the `:IP` to its containing `:Prefix` via `[:PART_OF]`, and then to the originating `:AS` through the `[:ORIGINATE]` relationship, filtering for a specific data source.",
+    "cypher": "MATCH p = (dn:DomainName)-[:MANAGED_BY]-(:AuthoritativeNameServer)-[:RESOLVES_TO]-(:IP)-[:PART_OF]-(:Prefix)-[:ORIGINATE {reference_org:'BGPKIT'}]-(a:AS) WHERE dn.name = 'google.com' RETURN p"
+  },
+  {
+    "intent": "Get a graph showing the authoritative DNS name servers and their hosting ASes for google.com.",
+    "abstract_intent": "Find the authoritative name servers for a given domain name and the Autonomous Systems that host them.",
+    "methodology": "First, the query locates the `:DomainName` node for 'google.com'. It then traverses the `:MANAGED_BY` relationship to find all associated `:AuthoritativeNameServer` nodes. Finally, it follows the full resolution path from each name server via `:RESOLVES_TO` to an `:IP`, `:PART_OF` to a `:Prefix`, and `:ORIGINATE` to the hosting `:AS`.",
+    "cypher": "MATCH p = (dn:DomainName)-[:MANAGED_BY]-(:AuthoritativeNameServer)-[:RESOLVES_TO]-(:IP)-[:PART_OF]-(:Prefix)-[:ORIGINATE {reference_org:'BGPKIT'}]-(a:AS) WHERE dn.name = 'google.com' RETURN p"
+  }
+]
