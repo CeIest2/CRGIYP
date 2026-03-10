@@ -18,24 +18,17 @@ class DatabaseManager:
 
     @classmethod
     def _initialize_driver(cls, db_name: str):
-        if db_name == "IYP":
-            uri      = os.getenv("IYP_URI")
-            user     = os.getenv("IYP_USER")
-            password = os.getenv("IYP_PASSWORD")
-        elif db_name == "RAG":
-            uri      = os.getenv("RAG_URI")
-            user     = os.getenv("RAG_USER")
-            password = os.getenv("RAG_PASSWORD")
-        else:
-            raise ValueError(f"Unknown database configuration: '{db_name}'. Expected 'IYP' or 'RAG'.")
+        uri = os.getenv(f"{db_name}_URI")
+        user = os.getenv(f"{db_name}_USER")
+        password = os.getenv(f"{db_name}_PASSWORD")
 
         try:
-            driver = GraphDatabase.driver(uri, auth=(user, password),max_connection_pool_size=100,connection_acquisition_timeout=2.0)
+            driver = GraphDatabase.driver(uri, auth=(user, password))
             driver.verify_connectivity()
             logger.info(f"✅ Successfully initialized Neo4j connection pool for: {db_name}")
             return driver
         except Exception as e:
-            logger.error(f"❌ Failed to connect to Neo4j ({db_name}): {e}")
+            logger.error(f"❌ Failed to connect to {db_name}: {e}")
             raise
 
     @classmethod
