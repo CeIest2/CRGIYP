@@ -50,7 +50,7 @@ The system orchestrates five specialized agents in a dynamic loop:
 └──────────────────────────┬──────────────────────────────────┘
                            ▼
                ┌───────────────────────┐
-               │   Orchestrator Agent  │
+               │ LangGraph State Graph │
                └──────────┬────────────┘
                           │
     ┌─────────────────────▼───────────────────────────────┐
@@ -84,12 +84,15 @@ The system orchestrates five specialized agents in a dynamic loop:
 cypher_agent/
 │
 ├── agents/
+│   ├── graph_orchestrator.py    # Main LangGraph entry point & routing logic
+│   ├── nodes.py                 # LangGraph nodes wrapping agent functions
+│   ├── state.py                 # Pydantic/TypedDict state definitions
 │   ├── decomposer.py            # Plan-and-Solve decomposition
 │   ├── evaluator.py             # Result validation agent
 │   ├── investigator.py          # Diagnostic & correction agent
-│   ├── orchestrator.py          # Main loop & routing logic
 │   ├── pre_analyst.py           # Context extraction agent
-│   └── request_generator.py    # Cypher generation agent
+│   ├── request_generator.py     # Cypher generation agent
+│   └── orchestrator.py          # (Legacy) Procedural loop orchestrator
 │
 ├── DataBase/
 │   ├── IYP_connector.py         # Secure Neo4j driver (read-only, traced)
@@ -162,7 +165,7 @@ The evaluation pipeline runs two independent scores:
 ```bash
 git clone https://github.com/your-org/cypher-agent.git
 cd cypher-agent
-pip install pydantic neo4j langchain-google-genai langfuse langchain-core python-dotenv
+pip install pydantic neo4j langchain-google-genai langfuse langchain-core python-dotenv langgraph
 ```
 
 ### 2. Configure Environment Variables
@@ -205,11 +208,12 @@ python setup_rag_db.py
 
 ```python
 import json
-from agents.orchestrator import run_autonomous_loop
+from agents.graph_orchestrator import run_graph_agent
 
 question = "What is the market share of AS 3215 in France?"
 
-result = run_autonomous_loop(question, use_rag=True)
+# Launches the LangGraph pipeline
+result = run_graph_agent(question, use_rag=True)
 
 if result.get("status") == "SUCCESS":
     print("✅ Final Cypher Query:\n", result["cypher"])
