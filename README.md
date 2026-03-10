@@ -14,7 +14,7 @@
 
 ## 📖 Overview
 
-The **Autonomous Cypher Agent** is an advanced, self-healing pipeline that bridges the gap between natural language and complex Neo4j graph database queries. It was built specifically for the **Internet Yellow Pages (IYP)** knowledge graph — a large-scale graph database mapping AS numbers, IP prefixes, domain names, IXPs, countries, rankings, and their interconnections across the global internet infrastructure.
+The **Autonomous Cypher Agent** is an advanced, self-healing pipeline that bridges the gap between natural language and complex Neo4j graph database queries. It was built specifically for the **Internet Yellow Pages (IYP)** (https://github.com/InternetHealthReport/internet-yellow-pages) knowledge graph — a large-scale graph database mapping AS numbers, IP prefixes, domain names, IXPs, countries, rankings, and their interconnections across the global internet infrastructure.
 
 Unlike standard Text-to-Cypher generators, this agent:
 
