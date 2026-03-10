@@ -52,7 +52,7 @@ def decomposition_node(state: AgentState) -> Dict[str, Any]:
         "sub_questions": res.get("sub_questions", []),
         "current_step_index": 0,
         "context_data": {},
-        "investigation_history": ""
+        "investigation_history": None
     }
 
 
@@ -129,7 +129,7 @@ def evaluator_node(state: AgentState) -> Dict[str, Any]:
         updates["context_data"] = new_context
         updates["current_step_index"] = idx + 1
         updates["current_attempt"] = 0
-        updates["investigation_history"] = ""
+        updates["investigation_history"] = None
 
     return updates
 
