@@ -1,9 +1,9 @@
 import os
 import logging
+import threading
 from typing import Dict, Any, List, Optional, Type
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from functools import lru_cache
 from utils.local_prompts import LOCAL_FALLBACK_PROMPTS
 
 from langfuse import Langfuse
@@ -16,32 +16,66 @@ load_dotenv()
 langfuse_client = Langfuse()
 logger = logging.getLogger(__name__)
 
+# FIX: lru_cache n'est pas thread-safe en écriture.
+# Avec 12 workers en parallèle, plusieurs threads pouvaient déclencher
+# un cache miss simultané sur le même prompt → N appels Langfuse concurrents
+# → race condition sur l'insertion dans le cache.
+# On remplace lru_cache par un dict protégé par un RLock.
+_prompt_cache: Dict[str, ChatPromptTemplate] = {}
+_prompt_cache_lock = threading.RLock()
 
-@lru_cache(maxsize=32)
+
 def _fetch_prompt_template(prompt_name: str) -> ChatPromptTemplate:
-    try:
-        logger.info(f"📥 Fetching prompt '{prompt_name}' from Langfuse (Cache MISS)...")
-        langfuse_prompt = langfuse_client.get_prompt(prompt_name)
-        prompt_messages = langfuse_prompt.get_langchain_prompt()
-        logger.debug(f"✅ Successfully loaded '{prompt_name}' from Langfuse.")
-        return ChatPromptTemplate.from_messages(prompt_messages)
-        
-    except Exception as e:
-        logger.warning(f"⚠️ Langfuse unreachable or prompt missing: {e}.")
-        logger.warning(f"🛡️ Switching to LOCAL FALLBACK for '{prompt_name}'...")
-        
-        if prompt_name in LOCAL_FALLBACK_PROMPTS:
-            fallback_messages = LOCAL_FALLBACK_PROMPTS[prompt_name]
-            return ChatPromptTemplate.from_messages(fallback_messages)
-        else:
-            logger.error(f"❌ CRITICAL: No local fallback found for '{prompt_name}'!")
-            raise
+    # Lecture sans lock (fast path — cas le plus fréquent)
+    if prompt_name in _prompt_cache:
+        return _prompt_cache[prompt_name]
 
-def _build_tracking_config(session_id: str, trace_name: str, tags: list, trace_id: str = None) -> dict:
-    metadata = {"langfuse_session_id": session_id, "langfuse_trace_name": trace_name, "langfuse_tags": tags}
+    # Écriture protégée par lock
+    with _prompt_cache_lock:
+        # Double-check : un autre thread a peut-être déjà inséré pendant qu'on attendait
+        if prompt_name in _prompt_cache:
+            return _prompt_cache[prompt_name]
+
+        try:
+            logger.info(f"📥 Fetching prompt '{prompt_name}' from Langfuse (Cache MISS)...")
+            langfuse_prompt = langfuse_client.get_prompt(prompt_name)
+            prompt_messages = langfuse_prompt.get_langchain_prompt()
+            template = ChatPromptTemplate.from_messages(prompt_messages)
+            logger.debug(f"✅ Successfully loaded '{prompt_name}' from Langfuse.")
+
+        except Exception as e:
+            logger.warning(f"⚠️ Langfuse unreachable or prompt missing: {e}.")
+            logger.warning(f"🛡️ Switching to LOCAL FALLBACK for '{prompt_name}'...")
+
+            if prompt_name not in LOCAL_FALLBACK_PROMPTS:
+                logger.error(f"❌ CRITICAL: No local fallback found for '{prompt_name}'!")
+                raise
+
+            template = ChatPromptTemplate.from_messages(LOCAL_FALLBACK_PROMPTS[prompt_name])
+
+        _prompt_cache[prompt_name] = template
+        return template
+
+
+def _build_tracking_config(
+    session_id: str,
+    trace_name: str,
+    tags: list,
+    trace_id: str = None,
+) -> dict:
+    metadata = {
+        "langfuse_session_id": session_id,
+        "langfuse_trace_name": trace_name,
+        "langfuse_tags": tags,
+    }
     if trace_id:
         metadata["langfuse_trace_id"] = trace_id
-    return {"callbacks": [CallbackHandler()], "metadata": metadata, "run_name": trace_name}
+    return {
+        "callbacks": [CallbackHandler()],
+        "metadata": metadata,
+        "run_name": trace_name,
+    }
+
 
 def call_llm_with_tracking(
     prompt_name: str,
@@ -53,7 +87,7 @@ def call_llm_with_tracking(
     temperature: float = 0.0,
     trace_id: str = None,
     pydantic_schema: Optional[Type[BaseModel]] = None,
-    thinking_budget: Optional[int] = None  
+    thinking_budget: Optional[int] = None,
 ) -> Dict[str, Any]:
 
     try:
@@ -69,9 +103,7 @@ def call_llm_with_tracking(
             llm_kwargs["thinking_budget"] = thinking_budget
 
         llm = ChatGoogleGenerativeAI(**llm_kwargs)
-
         tracking_config = _build_tracking_config(session_id, trace_name, tags, trace_id=trace_id)
-        tracking_config["run_name"] = trace_name
 
         if pydantic_schema:
             chain = prompt_template | llm.with_structured_output(pydantic_schema)
@@ -90,42 +122,3 @@ def call_llm_with_tracking(
     except Exception as e:
         logger.error(f"Échec de l'exécution LLM: {e}")
         return {"success": False, "content": None, "error_message": str(e)}
-
-
-if __name__ == "__main__":
-    from pydantic import Field
-
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-
-    class TestCypherGeneration(BaseModel):
-        reasoning: str = Field(description="Explication")
-        cypher: str = Field(description="Requête Cypher")
-        explanation: str = Field(description="Détails")
-
-    schema_path = "docs/IYP_doc.md"
-
-    try:
-        with open(schema_path, "r", encoding="utf-8") as f:
-            real_schema_doc = f.read()
-    except FileNotFoundError:
-        print(f"❌ Erreur : Le fichier {schema_path} est introuvable.")
-        exit(1)
-
-    test_variables = {"schema_doc": real_schema_doc, "question": "Quelle est la part de marché (population servie) de l'AS 3215 en France ?", "previous_history": "No previous attempts."}
-
-    result = call_llm_with_tracking(
-        prompt_name="iyp-cypher-generator",
-        variables=test_variables,
-        session_id="test_reel_llm_001",
-        trace_name="test_direct_call_reel",
-        tags=["test_reel", "llm_module"],
-        pydantic_schema=TestCypherGeneration
-    )
-
-    print("\n" + "="*40)
-    print("RÉSULTAT DU TEST RÉEL AVEC PYDANTIC")
-    print("="*40)
-
-    if result["success"]:
-        print("✅ SUCCÈS ! Réponse structurée obtenue :")
-        print("-" * 40)

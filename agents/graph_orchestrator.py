@@ -4,6 +4,7 @@ import logging
 
 from langgraph.graph import StateGraph, END
 from langfuse.langchain import CallbackHandler
+from langfuse import Langfuse
 
 from agents.state import AgentState
 from agents.nodes import (
@@ -18,6 +19,12 @@ from agents.nodes import (
 from DataBase.db_client import DatabaseManager
 
 logger = logging.getLogger(__name__)
+
+# Instance partagée — utilisée pour le flush en fin d'exécution.
+# Le flush est indispensable car Langfuse envoie les traces en batch
+# via un thread background : sans flush explicite, les traces sont
+# perdues quand le process se termine.
+_langfuse = Langfuse()
 
 
 def route_after_decomposition(state: AgentState) -> str:
@@ -81,13 +88,12 @@ def run_graph_agent(
     question: str,
     max_retries: int = 4,
     session_id: str = None,
-    use_rag: bool = False
-):
+    use_rag: bool = False,
+) -> dict:
     if not session_id:
         session_id = f"graph_session_{uuid.uuid4().hex[:8]}"
 
     run_id = uuid.uuid4().hex
-
     langfuse_handler = CallbackHandler()
 
     initial_state = {
@@ -104,22 +110,27 @@ def run_graph_agent(
         "sub_questions":         [],
     }
 
-    final_state = app.invoke(
-        initial_state,
-        config={
-            "callbacks": [langfuse_handler],
-            "run_name":  "LangGraph_Autonomous_Agent",
-            "metadata": {
-                "langfuse_session_id": session_id,
-            }
-        }
-    )
+    try:
+        final_state = app.invoke(
+            initial_state,
+            config={
+                "callbacks": [langfuse_handler],
+                "run_name":  "LangGraph_Autonomous_Agent",
+                "metadata":  {"langfuse_session_id": session_id},
+            },
+        )
+    finally:
+        # Flush garanti : vide la queue du thread background Langfuse
+        # avant que run_graph_agent() rende la main.
+        # Sans ce flush, les traces sont perdues si le process se termine
+        # juste après l'appel (standalone ou benchmark avec peu de workers).
+        _langfuse.flush()
 
     return {
         "status":     "SUCCESS" if final_state["is_valid"] else "FAILED",
         "iterations": final_state["current_attempt"],
         "cypher":     final_state["current_cypher"],
-        "data":       final_state["current_data"]
+        "data":       final_state["current_data"],
     }
 
 
@@ -131,6 +142,7 @@ if __name__ == "__main__":
     try:
         print(f"\n🚀 Launching LangGraph Agent for: {q}")
         result = run_graph_agent(q, use_rag=True)
+        _langfuse.flush()
         print("\n📊 Final Graph Result:\n", json.dumps(result, indent=2))
     finally:
         DatabaseManager.close_all()

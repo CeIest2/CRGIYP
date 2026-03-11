@@ -23,7 +23,7 @@ def generate_cypher_query(user_question: str, session_id: str = "gen_session_def
         "rag_examples": rag_examples
     }
     
-    response = call_llm_with_tracking(prompt_name="iyp-cypher-generator", variables=variables, model_name=model,thinking_budget=0 , session_id=session_id, trace_id=trace_id, trace_name=trace_name, tags=["generator"], pydantic_schema=CypherGeneration) 
+    response = call_llm_with_tracking(prompt_name="iyp-cypher-generator", variables=variables, model_name=model,thinking_budget=0, session_id=session_id, trace_id=trace_id, trace_name=trace_name, tags=["generator"], pydantic_schema=CypherGeneration) 
     
     if response["success"]:
         content = response["content"]
