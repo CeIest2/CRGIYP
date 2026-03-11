@@ -137,7 +137,7 @@ def run_graph_agent(
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
-    q = "Find nodes of any type that are connected to the node corresponding to Prefix '1.1.1.0/24'."
+    q = "Select the top 20 AS nodes from Ranking with name 'IHR country ranking: Total AS (RU)' that are in a peer-to-peer relationship and return their asn."
 
     try:
         print(f"\n🚀 Launching LangGraph Agent for: {q}")
